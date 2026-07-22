@@ -1,0 +1,61 @@
+.page {
+  padding: 48px 24px 80px;
+}
+
+.hero {
+  max-width: 1080px;
+  margin: 0 auto 48px;
+  display: grid;
+  gap: 16px;
+}
+
+.hero p {
+  color: #ffd166;
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
+}
+
+.hero h1 {
+  font-size: clamp(2.5rem, 4vw, 3.4rem);
+}
+
+.hero p:last-of-type {
+  color: #d0c8c1;
+  max-width: 760px;
+  line-height: 1.75;
+}
+
+.section {
+  display: grid;
+  gap: 24px;
+  max-width: 1120px;
+  margin: 0 auto 36px;
+}
+
+.sectionCard {
+  padding: 28px;
+  border-radius: 28px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.sectionCard h2 {
+  margin-bottom: 14px;
+}
+
+.sectionCard p {
+  color: #d0c8c1;
+  line-height: 1.8;
+}
+
+.gallery {
+  display: grid;
+  gap: 16px;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+}
+
+.galleryItem {
+  height: 220px;
+  border-radius: 24px;
+  background: linear-gradient(180deg, rgba(255, 209, 102, 0.18), rgba(255, 255, 255, 0.04));
+}

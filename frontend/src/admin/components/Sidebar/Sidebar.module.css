@@ -1,0 +1,266 @@
+@import '../../styles/admin.variables.css';
+
+/* ── Base sidebar ── */
+.sidebar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 100vh;
+  width: var(--sidebar-width);
+  background: var(--admin-surface);
+  border-right: 1px solid var(--admin-border);
+  display: flex;
+  flex-direction: column;
+  z-index: 100;
+  transition: width var(--transition-base);
+  overflow: hidden;
+}
+
+.sidebar.collapsed {
+  width: var(--sidebar-collapsed);
+}
+
+/* ── Brand / Logo area ── */
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 0 18px;
+  height: var(--topbar-height);
+  border-bottom: 1px solid var(--admin-border);
+  flex-shrink: 0;
+  overflow: hidden;
+  text-decoration: none;
+}
+
+.brandIcon {
+  width: 36px;
+  height: 36px;
+  border-radius: var(--radius-sm);
+  background: linear-gradient(135deg, var(--admin-gold), var(--admin-orange));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.1rem;
+  flex-shrink: 0;
+  box-shadow: 0 0 14px var(--admin-gold-glow);
+}
+
+.brandText {
+  display: flex;
+  flex-direction: column;
+  white-space: nowrap;
+  overflow: hidden;
+}
+
+.brandName {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: var(--admin-text-primary);
+  letter-spacing: 0.02em;
+  line-height: 1.2;
+}
+
+.brandSub {
+  font-size: 0.68rem;
+  color: var(--admin-gold);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+/* ── Scrollable nav ── */
+.nav {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 12px 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  scrollbar-width: none;
+}
+
+.nav::-webkit-scrollbar {
+  display: none;
+}
+
+/* ── Section label ── */
+.sectionLabel {
+  font-size: 0.62rem;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--admin-text-muted);
+  padding: 14px 10px 6px;
+  white-space: nowrap;
+  overflow: hidden;
+  transition: opacity var(--transition-base);
+}
+
+.sidebar.collapsed .sectionLabel {
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* ── Nav item ── */
+.navItem {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 11px 12px;
+  border-radius: var(--radius-md);
+  text-decoration: none;
+  color: var(--admin-text-secondary);
+  font-size: 0.875rem;
+  font-weight: 500;
+  white-space: nowrap;
+  position: relative;
+  transition:
+    background var(--transition-fast),
+    color var(--transition-fast),
+    box-shadow var(--transition-fast);
+  cursor: pointer;
+  border: none;
+  background: transparent;
+  width: 100%;
+  text-align: left;
+}
+
+.navItem:hover {
+  background: var(--admin-surface-hover);
+  color: var(--admin-text-primary);
+}
+
+.navItem.active {
+  background: var(--admin-gold-dim);
+  color: var(--admin-gold);
+  box-shadow: inset 3px 0 0 var(--admin-gold), 0 0 16px var(--admin-gold-glow);
+}
+
+/* ── Icon wrapper ── */
+.navIcon {
+  font-size: 1.1rem;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  transition: transform var(--transition-fast);
+}
+
+.navItem:hover .navIcon {
+  transform: scale(1.12);
+}
+
+.navItem.active .navIcon {
+  filter: drop-shadow(0 0 6px var(--admin-gold));
+}
+
+/* ── Label text ── */
+.navLabel {
+  flex: 1;
+  overflow: hidden;
+  transition: opacity var(--transition-base), width var(--transition-base);
+}
+
+.sidebar.collapsed .navLabel {
+  opacity: 0;
+  width: 0;
+  pointer-events: none;
+}
+
+/* ── Badge ── */
+.badge {
+  background: var(--admin-orange);
+  color: #fff;
+  font-size: 0.62rem;
+  font-weight: 700;
+  padding: 2px 6px;
+  border-radius: 999px;
+  flex-shrink: 0;
+  transition: opacity var(--transition-base);
+}
+
+.sidebar.collapsed .badge {
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* ── Tooltip on collapsed ── */
+.navItem .tooltip {
+  display: none;
+  position: absolute;
+  left: calc(var(--sidebar-collapsed) + 8px);
+  top: 50%;
+  transform: translateY(-50%);
+  background: var(--admin-surface-2);
+  color: var(--admin-text-primary);
+  font-size: 0.8rem;
+  padding: 6px 12px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--admin-border);
+  white-space: nowrap;
+  pointer-events: none;
+  z-index: 200;
+  box-shadow: var(--shadow-card);
+}
+
+.sidebar.collapsed .navItem:hover .tooltip {
+  display: block;
+}
+
+/* ── Divider ── */
+.divider {
+  height: 1px;
+  background: var(--admin-border);
+  margin: 8px 10px;
+  flex-shrink: 0;
+}
+
+/* ── Footer (logout) ── */
+.sidebarFooter {
+  padding: 10px 10px 16px;
+  border-top: 1px solid var(--admin-border);
+  flex-shrink: 0;
+}
+
+/* ── Collapse toggle button ── */
+.collapseBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--admin-border);
+  background: var(--admin-surface-2);
+  color: var(--admin-text-secondary);
+  cursor: pointer;
+  transition: background var(--transition-fast), color var(--transition-fast);
+  flex-shrink: 0;
+  font-size: 0.85rem;
+}
+
+.collapseBtn:hover {
+  background: var(--admin-gold-dim);
+  color: var(--admin-gold);
+  border-color: var(--admin-gold-glow);
+}
+
+/* ── Mobile: sidebar is off-screen by default ── */
+@media (max-width: 1024px) {
+  .sidebar {
+    transform: translateX(-100%);
+    transition: transform var(--transition-base), width var(--transition-base);
+    width: var(--sidebar-width) !important;
+    box-shadow: var(--shadow-modal);
+  }
+
+  .sidebar.mobileOpen {
+    transform: translateX(0);
+  }
+
+  .collapseBtn {
+    display: none;
+  }
+}

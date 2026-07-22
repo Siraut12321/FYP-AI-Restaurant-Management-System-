@@ -1,0 +1,64 @@
+@import '../../styles/admin.variables.css';
+
+.shell {
+  display: flex;
+  min-height: 100vh;
+  background: var(--admin-bg);
+  color: var(--admin-text-primary);
+  font-family: 'Inter', sans-serif;
+  position: relative;
+}
+
+/* ── Content area (right of sidebar) ── */
+.body {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  margin-left: var(--sidebar-width);
+  transition: margin-left var(--transition-base);
+}
+
+.body.collapsed {
+  margin-left: var(--sidebar-collapsed);
+}
+
+/* ── Scrollable page content below topbar ── */
+.content {
+  flex: 1;
+  padding: 28px 32px;
+  margin-top: var(--topbar-height);
+  overflow-y: auto;
+  min-height: calc(100vh - var(--topbar-height));
+}
+
+/* ── Overlay for mobile drawer — visibility handled by AnimatePresence ── */
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.65);
+  z-index: 90;
+  backdrop-filter: blur(2px);
+  cursor: pointer;
+}
+
+/* ── Responsive ── */
+@media (max-width: 1024px) {
+  .body {
+    margin-left: 0;
+  }
+
+  .body.collapsed {
+    margin-left: 0;
+  }
+
+  .content {
+    padding: 20px 20px;
+  }
+}
+
+@media (max-width: 640px) {
+  .content {
+    padding: 16px 14px;
+  }
+}

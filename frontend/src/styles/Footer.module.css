@@ -1,0 +1,20 @@
+.footer {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 34px 24px 28px;
+  text-align: center;
+  color: #d2c9bf;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  background: linear-gradient(180deg, rgba(8, 8, 10, 0.95), rgba(4, 4, 6, 1));
+}
+
+.footer div:first-child {
+  font-weight: 600;
+  color: #f7f5f2;
+}
+
+.footer div:last-child {
+  font-size: 0.95rem;
+  color: #beb2a6;
+}

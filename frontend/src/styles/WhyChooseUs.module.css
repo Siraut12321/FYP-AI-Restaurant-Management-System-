@@ -1,0 +1,53 @@
+.section {
+  padding: 64px 24px;
+}
+
+.heading {
+  text-align: center;
+  margin-bottom: 36px;
+}
+
+.heading p {
+  color: #ffd166;
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
+  margin-bottom: 12px;
+}
+
+.heading h2 {
+  font-size: clamp(2.25rem, 3vw, 3rem);
+}
+
+.grid {
+  display: grid;
+  gap: 24px;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+}
+
+.card {
+  padding: 28px;
+  border-radius: 28px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 24px 45px rgba(0, 0, 0, 0.14);
+}
+
+.icon {
+  width: 58px;
+  height: 58px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: rgba(255, 209, 102, 0.14);
+  font-size: 1.5rem;
+  margin-bottom: 18px;
+}
+
+.card h3 {
+  margin-bottom: 14px;
+}
+
+.card p {
+  color: #d0c8c1;
+  line-height: 1.85;
+}

@@ -1,0 +1,61 @@
+/* ============================================================
+   ADMIN DESIGN TOKENS — single source of truth
+   ============================================================ */
+:root {
+  /* Backgrounds */
+  --admin-bg:            #0D0D0D;
+  --admin-surface:       #181818;
+  --admin-surface-2:     #1f1f1f;
+  --admin-surface-hover: #242424;
+
+  /* Accent */
+  --admin-gold:          #F4C542;
+  --admin-gold-dim:      rgba(244, 197, 66, 0.15);
+  --admin-gold-glow:     rgba(244, 197, 66, 0.25);
+  --admin-orange:        #FF9F1C;
+  --admin-orange-dim:    rgba(255, 159, 28, 0.15);
+
+  /* Status */
+  --admin-success:       #22c55e;
+  --admin-success-dim:   rgba(34, 197, 94, 0.15);
+  --admin-warning:       #f59e0b;
+  --admin-warning-dim:   rgba(245, 158, 11, 0.15);
+  --admin-danger:        #ef4444;
+  --admin-danger-dim:    rgba(239, 68, 68, 0.15);
+  --admin-info:          #3b82f6;
+  --admin-info-dim:      rgba(59, 130, 246, 0.15);
+
+  /* Text */
+  --admin-text-primary:   #ffffff;
+  --admin-text-secondary: #a1a1aa;
+  --admin-text-muted:     #71717a;
+
+  /* Borders */
+  --admin-border:        rgba(255, 255, 255, 0.08);
+  --admin-border-hover:  rgba(255, 255, 255, 0.14);
+
+  /* Layout */
+  --sidebar-width:       260px;
+  --sidebar-collapsed:   72px;
+  --topbar-height:       64px;
+
+  /* Radius */
+  --radius-sm:  10px;
+  --radius-md:  14px;
+  --radius-lg:  20px;
+  --radius-xl:  28px;
+
+  /* Shadows */
+  --shadow-card:  0 4px 24px rgba(0, 0, 0, 0.4);
+  --shadow-glow:  0 0 20px rgba(244, 197, 66, 0.18);
+  --shadow-modal: 0 24px 80px rgba(0, 0, 0, 0.7);
+
+  /* Transitions */
+  --transition-fast: 0.15s ease;
+  --transition-base: 0.25s ease;
+  --transition-slow: 0.4s ease;
+
+  /* Glass */
+  --glass-bg:     rgba(255, 255, 255, 0.04);
+  --glass-border: rgba(255, 255, 255, 0.07);
+}

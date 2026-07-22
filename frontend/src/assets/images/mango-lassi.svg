@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 500" width="800" height="500" role="img" aria-label="Mango Lassi">
+  <rect width="100%" height="100%" fill="#061018" />
+  <g transform="translate(120,60)">
+    <rect x="200" y="120" width="120" height="180" rx="24" fill="#fff7e9" />
+    <rect x="220" y="140" width="80" height="140" rx="18" fill="#ffd166" />
+    <rect x="240" y="110" width="40" height="12" rx="6" fill="#ffd166" />
+    <path d="M250 270 q20 18 40 0" stroke="#f7c24c" stroke-width="6" fill="none" stroke-linecap="round" />
+
+    <text x="0" y="330" fill="#e3dcd2" font-family="Inter, Arial, sans-serif" font-size="32" font-weight="700">Mango Lassi</text>
+  </g>
+</svg>

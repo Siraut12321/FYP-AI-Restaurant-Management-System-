@@ -1,0 +1,247 @@
+.heroSection {
+  padding: 120px 24px 90px;
+  min-height: 84vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+
+.heroSection::before {
+  content: '';
+  position: absolute;
+  inset: 8% 10% auto auto;
+  width: 240px;
+  height: 240px;
+  background: radial-gradient(circle, rgba(255, 209, 102, 0.25), transparent 70%);
+  filter: blur(16px);
+  pointer-events: none;
+}
+
+.heroContent {
+  width: min(1180px, 100%);
+  display: grid;
+  grid-template-columns: 1.1fr 0.9fr;
+  align-items: center;
+  gap: 32px;
+  background: rgba(16, 16, 19, 0.82);
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  border-radius: 36px;
+  padding: 48px;
+  box-shadow: 0 24px 90px rgba(0, 0, 0, 0.35);
+  backdrop-filter: blur(18px);
+}
+
+.heroText {
+  max-width: 620px;
+}
+
+.subtitle {
+  color: #ffd166;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  font-size: 0.82rem;
+  margin-bottom: 16px;
+  font-weight: 600;
+}
+
+.heroText h1 {
+  font-size: clamp(2.8rem, 4.3vw, 4.25rem);
+  line-height: 1.05;
+  margin-bottom: 20px;
+  letter-spacing: -0.03em;
+}
+
+.description {
+  color: #d0c8c1;
+  font-size: 1.03rem;
+  margin-bottom: 24px;
+  line-height: 1.8;
+}
+
+.heroBadges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 28px;
+}
+
+.heroBadges span {
+  padding: 8px 14px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  color: #f8f2ea;
+  font-size: 0.9rem;
+}
+
+.ctaGroup {
+  display: flex;
+  gap: 14px;
+  flex-wrap: wrap;
+  justify-content: flex-start;
+}
+
+.primary,
+.secondary {
+  border: none;
+  border-radius: 999px;
+  padding: 14px 24px;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+}
+
+.primary {
+  background: linear-gradient(135deg, #ffd166, #ffb347);
+  color: #090909;
+  font-weight: 700;
+}
+
+.secondary {
+  background: rgba(255, 255, 255, 0.07);
+  color: #f7f5f2;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.primary:hover,
+.secondary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.18);
+}
+
+.heroVisual {
+  position: relative;
+  min-height: 320px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.visualGlow {
+  position: absolute;
+  inset: 20px;
+  border-radius: 28px;
+  background: radial-gradient(circle, rgba(255, 209, 102, 0.2), transparent 65%);
+  filter: blur(20px);
+}
+
+.visualCard {
+  position: relative;
+  width: 100%;
+  max-width: 360px;
+  padding: 24px;
+  border-radius: 24px;
+  background: linear-gradient(145deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.04));
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.1), 0 18px 50px rgba(0, 0, 0, 0.28);
+}
+
+.visualLabel {
+  color: #ffd166;
+  text-transform: uppercase;
+  letter-spacing: 0.2em;
+  font-size: 0.72rem;
+  margin-bottom: 10px;
+}
+
+.visualCard h3 {
+  font-size: 1.4rem;
+  margin-bottom: 10px;
+}
+
+.visualCard p {
+  color: #d0c8c1;
+  line-height: 1.7;
+}
+
+.statRow {
+  display: flex;
+  gap: 16px;
+  margin-top: 18px;
+}
+
+.statRow > div {
+  flex: 1;
+  padding: 12px;
+  border-radius: 14px;
+  background: rgba(0, 0, 0, 0.2);
+}
+
+.statRow strong {
+  display: block;
+  font-size: 1.05rem;
+  margin-bottom: 4px;
+}
+
+.statRow span {
+  color: #cdbeb2;
+  font-size: 0.8rem;
+}
+
+@media (max-width: 900px) {
+  .heroContent {
+    grid-template-columns: 1fr;
+    padding: 36px 28px;
+  }
+
+  .heroText {
+    max-width: none;
+  }
+
+  .ctaGroup {
+    justify-content: flex-start;
+  }
+}
+
+@media (max-width: 760px) {
+  .heroSection {
+    padding: 86px 14px 64px;
+    min-height: auto;
+  }
+
+  .heroContent {
+    padding: 24px 18px;
+    gap: 20px;
+  }
+
+  .heroText h1 {
+    font-size: clamp(2.1rem, 8.8vw, 2.8rem);
+  }
+
+  .description {
+    font-size: 0.96rem;
+  }
+
+  .heroBadges {
+    gap: 8px;
+  }
+
+  .heroBadges span {
+    width: 100%;
+    text-align: center;
+  }
+
+  .ctaGroup {
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .primary,
+  .secondary {
+    width: 100%;
+  }
+
+  .heroVisual {
+    min-height: 240px;
+  }
+
+  .visualCard {
+    padding: 18px;
+  }
+
+  .statRow {
+    flex-direction: column;
+    gap: 10px;
+  }
+}

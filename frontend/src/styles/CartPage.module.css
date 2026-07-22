@@ -1,0 +1,128 @@
+.page {
+  padding: 48px 24px;
+  max-width: 1120px;
+  margin: 0 auto;
+}
+
+.grid {
+  display: grid;
+  gap: 24px;
+  grid-template-columns: 1fr 320px;
+}
+
+.items {
+  display: grid;
+  gap: 16px;
+}
+
+.item {
+  display: grid;
+  grid-template-columns: 120px 1fr 100px;
+  gap: 16px;
+  padding: 18px;
+  border-radius: 18px;
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255,255,255,0.06);
+  align-items: center;
+}
+
+.item img {
+  width: 120px;
+  height: 84px;
+  object-fit: cover;
+  border-radius: 12px;
+}
+
+.info h3 { margin: 0 0 8px 0 }
+
+.controls {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.controls button {
+  padding: 8px 12px;
+  border-radius: 8px;
+  border: none;
+  background: rgba(255,255,255,0.06);
+  color: #fff;
+}
+
+.remove {
+  margin-left: 12px;
+  background: transparent;
+  color: #ffd166;
+}
+
+.price {
+  font-weight: 800;
+}
+
+.summary {
+  padding: 18px;
+  border-radius: 18px;
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255,255,255,0.06);
+  display: grid;
+  gap: 16px;
+}
+
+.checkout {
+  padding: 12px 18px;
+  border-radius: 999px;
+  background: #ffd166;
+  color: #090909;
+  border: none;
+  cursor: pointer;
+  font-weight: 700;
+}
+
+.clear {
+  padding: 10px 14px;
+  border-radius: 12px;
+  background: rgba(255,255,255,0.04);
+  color: #ffd166;
+  border: none;
+  cursor: pointer;
+}
+
+@media (max-width: 880px) {
+  .grid { grid-template-columns: 1fr; }
+  .item { grid-template-columns: 100px 1fr auto; }
+}
+
+.checkoutForm {
+  display: grid;
+  gap: 10px;
+}
+
+.checkoutForm h4 {
+  margin: 4px 0 0 0;
+  font-size: 0.9rem;
+  color: rgba(255,255,255,0.6);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.input {
+  padding: 10px 14px;
+  border-radius: 10px;
+  border: 1px solid rgba(255,255,255,0.1);
+  background: rgba(255,255,255,0.05);
+  color: #fff;
+  font-size: 0.95rem;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.input option {
+  background: #1a1a1a;
+  color: #fff;
+}
+
+.error {
+  color: #ff6b6b;
+  font-size: 0.875rem;
+  margin: 0;
+}

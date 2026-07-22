@@ -1,0 +1,127 @@
+.navbar {
+  display: flex;
+  gap: 20px;
+  align-items: center;
+  justify-content: space-between;
+  padding: 18px 32px;
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  backdrop-filter: blur(18px);
+  background: rgba(8, 8, 10, 0.9);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.12);
+}
+
+.brand {
+  font-size: 1.14rem;
+  font-weight: 700;
+  letter-spacing: 0.13em;
+  color: #ffd166;
+  text-transform: uppercase;
+}
+
+.menu {
+  display: flex;
+  gap: 22px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.menu a {
+  color: #f7f5f2;
+  text-decoration: none;
+  transition: color 0.2s ease, transform 0.2s ease;
+  font-weight: 500;
+}
+
+.menu a:hover {
+  color: #ffd166;
+  transform: translateY(-1px);
+}
+
+.actions {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.button {
+  padding: 10px 16px;
+  border-radius: 999px;
+  background: linear-gradient(135deg, #ffd166, #ffb347);
+  color: #090909;
+  text-decoration: none;
+  font-weight: 700;
+  box-shadow: 0 8px 20px rgba(255, 209, 102, 0.16);
+}
+
+.buttonOutline {
+  padding: 10px 16px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 209, 102, 0.35);
+  color: #f7f5f2;
+  text-decoration: none;
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.cartLink {
+  color: #f7f5f2;
+  text-decoration: none;
+  padding: 8px 12px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  font-weight: 700;
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.cartLink:hover {
+  color: #ffd166;
+}
+
+.userName {
+  color: #d8ccb8;
+  font-size: 0.95rem;
+}
+
+@media (max-width: 900px) {
+  .navbar {
+    padding: 16px 20px;
+  }
+
+  .menu {
+    gap: 16px;
+  }
+}
+
+@media (max-width: 680px) {
+  .navbar {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 14px;
+    padding: 16px 16px 18px;
+  }
+
+  .brand {
+    text-align: center;
+  }
+
+  .menu {
+    justify-content: space-between;
+    width: 100%;
+    gap: 10px 14px;
+  }
+
+  .actions {
+    justify-content: flex-start;
+    width: 100%;
+  }
+
+  .button,
+  .buttonOutline,
+  .cartLink {
+    width: 100%;
+    text-align: center;
+  }
+}

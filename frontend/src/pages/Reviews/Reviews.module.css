@@ -1,0 +1,244 @@
+@import '../../admin/styles/admin.variables.css';
+
+.pageHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 28px;
+  flex-wrap: wrap;
+}
+
+.pageTitle {
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: var(--admin-text-primary);
+}
+
+.pageSub {
+  font-size: 0.82rem;
+  color: var(--admin-text-secondary);
+  margin-top: 3px;
+}
+
+/* ── Summary row ── */
+.summaryRow {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+  margin-bottom: 28px;
+}
+
+.summaryCard {
+  background: var(--admin-surface);
+  border: 1px solid var(--admin-border);
+  border-radius: var(--radius-xl);
+  padding: 20px 22px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  transition: border-color var(--transition-base), box-shadow var(--transition-base);
+}
+
+.summaryCard:hover {
+  border-color: var(--admin-border-hover);
+  box-shadow: var(--shadow-card);
+}
+
+.summaryIcon {
+  font-size: 1.4rem;
+  margin-bottom: 4px;
+}
+
+.summaryValue {
+  font-size: 1.6rem;
+  font-weight: 700;
+  color: var(--admin-text-primary);
+  line-height: 1;
+}
+
+.summaryLabel {
+  font-size: 0.78rem;
+  color: var(--admin-text-secondary);
+}
+
+/* ── Filter bar ── */
+.filterBar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 22px;
+  flex-wrap: wrap;
+}
+
+.filterBtn {
+  padding: 7px 16px;
+  border-radius: 999px;
+  border: 1px solid var(--admin-border);
+  background: transparent;
+  color: var(--admin-text-secondary);
+  font-size: 0.8rem;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.filterBtn:hover,
+.filterBtn.active {
+  background: var(--admin-gold-dim);
+  color: var(--admin-gold);
+  border-color: var(--admin-gold-glow);
+}
+
+/* ── Reviews grid ── */
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 18px;
+}
+
+/* ── Review card ── */
+.card {
+  background: var(--admin-surface);
+  border: 1px solid var(--admin-border);
+  border-radius: var(--radius-xl);
+  padding: 20px 22px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  transition: border-color var(--transition-base), box-shadow var(--transition-base), transform var(--transition-base);
+}
+
+.card:hover {
+  border-color: var(--admin-border-hover);
+  box-shadow: var(--shadow-card);
+  transform: translateY(-2px);
+}
+
+/* ── Card top row ── */
+.cardTop {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.customerInfo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.avatar {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--admin-gold), var(--admin-orange));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: #0d0d0d;
+  flex-shrink: 0;
+}
+
+.customerName {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--admin-text-primary);
+}
+
+.reviewDate {
+  font-size: 0.72rem;
+  color: var(--admin-text-muted);
+  margin-top: 2px;
+}
+
+/* ── Sentiment badge ── */
+.sentiment {
+  padding: 3px 10px;
+  border-radius: 999px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  flex-shrink: 0;
+}
+
+.sentiment.positive { background: var(--admin-success-dim); color: var(--admin-success); }
+.sentiment.neutral  { background: var(--admin-warning-dim); color: var(--admin-warning); }
+.sentiment.negative { background: var(--admin-danger-dim);  color: var(--admin-danger);  }
+
+/* ── Stars ── */
+.stars {
+  display: flex;
+  gap: 2px;
+  font-size: 0.95rem;
+}
+
+.starFilled { color: var(--admin-gold); }
+.starEmpty  { color: var(--admin-border); }
+
+/* ── Review text ── */
+.reviewText {
+  font-size: 0.83rem;
+  color: var(--admin-text-secondary);
+  line-height: 1.6;
+}
+
+/* ── Dish tag ── */
+.dishTag {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.72rem;
+  color: var(--admin-gold);
+  background: var(--admin-gold-dim);
+  padding: 3px 10px;
+  border-radius: 999px;
+  width: fit-content;
+}
+
+/* ── Card actions ── */
+.cardActions {
+  display: flex;
+  gap: 8px;
+  padding-top: 4px;
+  border-top: 1px solid var(--admin-border);
+}
+
+.actionBtn {
+  flex: 1;
+  padding: 7px 10px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--admin-border);
+  background: transparent;
+  color: var(--admin-text-secondary);
+  font-size: 0.78rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  transition: all var(--transition-fast);
+}
+
+.actionBtn:hover {
+  background: var(--admin-surface-hover);
+  color: var(--admin-text-primary);
+  border-color: var(--admin-border-hover);
+}
+
+.actionBtn.danger:hover {
+  background: var(--admin-danger-dim);
+  color: var(--admin-danger);
+  border-color: var(--admin-danger);
+}
+
+/* ── Responsive ── */
+@media (max-width: 1024px) {
+  .summaryRow { grid-template-columns: repeat(2, 1fr); }
+}
+
+@media (max-width: 640px) {
+  .summaryRow { grid-template-columns: repeat(2, 1fr); }
+  .grid       { grid-template-columns: 1fr; }
+}

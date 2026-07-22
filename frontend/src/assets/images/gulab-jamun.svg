@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 500" width="800" height="500" role="img" aria-label="Gulab Jamun">
+  <rect width="100%" height="100%" fill="#031016" />
+  <g transform="translate(120,60)">
+    <circle cx="200" cy="160" r="44" fill="#6a1b0d" />
+    <circle cx="260" cy="160" r="44" fill="#6a1b0d" />
+    <circle cx="320" cy="160" r="44" fill="#6a1b0d" />
+
+    <g fill="#ffd166">
+      <ellipse cx="200" cy="200" rx="36" ry="8" opacity="0.25" />
+      <ellipse cx="260" cy="200" rx="36" ry="8" opacity="0.25" />
+      <ellipse cx="320" cy="200" rx="36" ry="8" opacity="0.25" />
+    </g>
+
+    <text x="0" y="300" fill="#e3dcd2" font-family="Inter, Arial, sans-serif" font-size="32" font-weight="700">Gulab Jamun</text>
+  </g>
+</svg>
