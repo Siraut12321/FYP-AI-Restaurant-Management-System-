@@ -27,6 +27,12 @@ const orderService = {
     return data;
   },
 
+  // ─── Customer: Get Live Order Tracking ────────────────────────────────────
+  async getOrderTracking(id) {
+    const { data } = await api.get(`/orders/${id}/tracking`);
+    return data;
+  },
+
   // ─── Admin: Update Order Status ────────────────────────────────────────────
   // orderStatus: 'Pending' | 'Preparing' | 'Ready' | 'Delivered' | 'Cancelled'
   async updateOrderStatus(id, orderStatus) {

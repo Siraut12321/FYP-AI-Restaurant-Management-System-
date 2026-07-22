@@ -21,6 +21,9 @@ function Navbar() {
         <Link to='/cart' className={styles.cartLink}>Cart {totalItems > 0 ? `(${totalItems})` : ''}</Link>
         {user ? (
           <>
+            {user.role === 'customer' && <Link to='/profile'>Profile</Link>}
+            {user.role === 'customer' && <Link to='/orders'>Orders</Link>}
+            {user.role === 'customer' && <Link to='/favorites'>Favorites</Link>}
             <span className={styles.userName}>Hi, {user.name}</span>
             <button onClick={logout} className={styles.buttonOutline}>Logout</button>
           </>

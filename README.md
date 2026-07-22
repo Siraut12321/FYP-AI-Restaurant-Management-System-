@@ -17,8 +17,12 @@ This project provides a complete foundation for a smart restaurant ecosystem wit
 
 ### Customer Experience
 - Browse featured dishes and menu categories
-- Place and track orders
-- Save favorite items
+- Manage profile details, contact information, and Cloudinary avatar uploads
+- View order history with item details, totals, payment method, and status
+- Track order progress from pending through delivered or cancelled
+- Save and remove favorite dishes
+- View average ratings and customer reviews for menu items
+- Add, edit, and delete reviews for purchased dishes
 - Responsive, modern UI for desktop and mobile
 
 ### Admin Experience
@@ -29,10 +33,31 @@ This project provides a complete foundation for a smart restaurant ecosystem wit
 
 ### Technical Highlights
 - RESTful API backend with Express
-- MongoDB data modeling for users, menus, orders, and favorites
+- MongoDB data modeling for users, menus, orders, favorites, and reviews
 - JWT-based authentication
 - Cloudinary integration for image uploads
 - Vite-powered React frontend for fast development
+
+## Customer Experience API
+
+All customer endpoints require the existing JWT authentication unless noted otherwise.
+
+| Method | Endpoint | Purpose |
+| --- | --- | --- |
+| GET | `/api/v1/profile` | Get the logged-in customer's profile and total order count |
+| PATCH | `/api/v1/profile` | Update name, phone, address, or avatar |
+| GET | `/api/v1/orders/my-orders` | Get the logged-in customer's order history |
+| GET | `/api/v1/orders/:id` | Get an authorized order's details |
+| GET | `/api/v1/orders/:id/tracking` | Get live status, timeline, and preparation estimate |
+| POST | `/api/v1/favorites/:menuId` | Add a menu item to favorites |
+| GET | `/api/v1/favorites` | List the customer's favorite menu items |
+| DELETE | `/api/v1/favorites/:menuId` | Remove a menu item from favorites |
+| GET | `/api/v1/reviews/:menuItemId` | Get paginated reviews and rating summary |
+| POST | `/api/v1/reviews` | Review a dish purchased by the customer |
+| PATCH | `/api/v1/reviews/:id` | Edit the customer's own review |
+| DELETE | `/api/v1/reviews/:id` | Delete the customer's own review |
+
+Customers can access the frontend flows at `/profile`, `/orders`, `/favorites`, and `/orders/:id`.
 
 ## Tech Stack
 
@@ -74,6 +99,8 @@ restaurant-ai-system/
 │   └── package.json
 └── README.md
 ```
+
+See [TESTING_GUIDE.md](TESTING_GUIDE.md) for API, frontend, authentication, error-state, and regression testing steps.
 
 ## Getting Started
 

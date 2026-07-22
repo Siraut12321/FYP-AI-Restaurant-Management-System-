@@ -84,6 +84,32 @@ export const getOrderById = async (orderId, user) => {
   return order;
 };
 
+// ─── Get Customer Order Tracking ─────────────────────────────────────────────
+export const getOrderTracking = async (orderId, user) => {
+  const order = await Order.findById(orderId)
+    .populate('customer', '_id')
+    .populate('orderItems.menuItem', 'preparationTime');
+
+  if (!order) throw new AppError('Order not found', 404);
+
+  if (user.role !== 'admin' && order.customer._id.toString() !== user._id.toString()) {
+    throw new AppError('Not authorized to view this order', 403);
+  }
+
+  const preparationTimes = order.orderItems
+    .map(({ menuItem }) => menuItem?.preparationTime)
+    .filter((time) => Number.isFinite(time) && time > 0);
+
+  return {
+    orderId: order._id,
+    currentStatus: order.orderStatus,
+    orderDate: order.createdAt,
+    estimatedPreparationTime: preparationTimes.length ? Math.max(...preparationTimes) : null,
+    timeline: ['Pending', 'Preparing', 'Ready', 'Delivered'],
+    isCancelled: order.orderStatus === 'Cancelled',
+  };
+};
+
 // ─── Update Order Status (Admin) ──────────────────────────────────────────────
 export const updateOrderStatus = async (orderId, orderStatus) => {
   const order = await Order.findById(orderId);

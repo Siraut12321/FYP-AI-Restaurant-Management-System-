@@ -10,6 +10,7 @@ import {
   getMyOrders,
   getAllOrders,
   getOrderById,
+  getOrderTracking,
   updateOrderStatus,
   deleteOrder,
 } from '../controllers/order.controller.js';
@@ -25,6 +26,7 @@ router.get('/my-orders',   getMyOrders);
 
 // ─── Admin Only Routes ────────────────────────────────────────────────────────
 router.get('/',            restrictTo('admin'), getAllOrders);
+router.get('/:id/tracking',mongoIdValidator,    getOrderTracking);
 router.get('/:id',         mongoIdValidator,    getOrderById);
 router.patch('/:id/status',updateStatusValidator, restrictTo('admin'), updateOrderStatus);
 router.delete('/:id',      mongoIdValidator,    restrictTo('admin'), deleteOrder);

@@ -41,6 +41,16 @@ export const getOrderById = async (req, res, next) => {
   }
 };
 
+// ─── Get Customer Order Tracking ─────────────────────────────────────────────
+export const getOrderTracking = async (req, res, next) => {
+  try {
+    const tracking = await orderService.getOrderTracking(req.params.id, req.user);
+    sendSuccess(res, 200, 'Order tracking fetched successfully', tracking);
+  } catch (err) {
+    next(err);
+  }
+};
+
 // ─── Update Order Status (Admin) ──────────────────────────────────────────────
 export const updateOrderStatus = async (req, res, next) => {
   try {

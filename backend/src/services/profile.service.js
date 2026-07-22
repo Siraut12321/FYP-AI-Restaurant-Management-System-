@@ -15,10 +15,12 @@ const extractPublicId = (url) => {
 
 // ─── Get Profile ──────────────────────────────────────────────────────────────
 export const getProfile = async (userId) => {
-  const user = await User.findById(userId).select('-password');
-  if (!user) throw new AppError('User not found', 404);
+  const [user, totalOrders] = await Promise.all([
+    User.findById(userId).select('name email role avatar phone address createdAt updatedAt'),
+    Order.countDocuments({ customer: userId }),
+  ]);
 
-  const totalOrders = await Order.countDocuments({ customer: userId });
+  if (!user) throw new AppError('User not found', 404);
 
   return { ...user.toObject(), totalOrders };
 };

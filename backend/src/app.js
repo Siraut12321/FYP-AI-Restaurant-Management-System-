@@ -50,12 +50,16 @@ import menuRoutes      from './routes/menu.routes.js';
 import orderRoutes     from './routes/order.routes.js';
 import analyticsRoutes from './routes/analytics.routes.js';
 import profileRoutes   from './routes/profile.routes.js';
+import favoritesRoutes from './routes/favorites.routes.js';
+import reviewRoutes    from './routes/review.routes.js';
 
 app.use('/api/v1/auth',      authRoutes);
 app.use('/api/v1/menu',      menuRoutes);
 app.use('/api/v1/orders',    orderRoutes);
 app.use('/api/v1/analytics', analyticsRoutes);
 app.use('/api/v1/profile',   profileRoutes);
+app.use('/api/v1/favorites', favoritesRoutes);
+app.use('/api/v1/reviews',   reviewRoutes);
 
 // ─── Dev-only seed endpoint ───────────────────────────────────────────────────
 if (process.env.NODE_ENV === 'development') {

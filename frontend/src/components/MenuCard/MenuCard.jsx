@@ -1,16 +1,57 @@
-import { useContext, useState } from 'react';
+import { useContext, useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { FaHeart, FaRegHeart, FaStar } from 'react-icons/fa';
 import styles from '../../styles/MenuCard.module.css';
 import { CartContext } from '../../context/CartContext';
+import { AuthContext } from '../../context/AuthContext';
+import favoritesService from '../../services/favoritesService';
+import ReviewSection from '../Reviews/ReviewSection';
 
 function MenuCard({ item }) {
   const [favorite, setFavorite] = useState(false);
+  const [favoriteError, setFavoriteError] = useState('');
+  const [favoriteLoading, setFavoriteLoading] = useState(false);
   const [qty, setQty] = useState(1);
   const [imageLoaded, setImageLoaded] = useState(false);
   const { addItem } = useContext(CartContext);
+  const { user } = useContext(AuthContext);
   const safeRating = typeof item.rating === 'number' ? item.rating : 4.7;
   const safePrice = item.price || (typeof item.priceValue === 'number' ? `PKR ${item.priceValue}` : 'Price available');
+
+  useEffect(() => {
+    if (!user || !item.id) return undefined;
+    let active = true;
+    favoritesService.checkFavorite(item.id)
+      .then(({ isFavorited }) => {
+        if (active) setFavorite(isFavorited);
+      })
+      .catch(() => {})
+      .finally(() => {});
+    return () => { active = false; };
+  }, [item.id, user]);
+
+  async function toggleFavorite() {
+    if (!user) {
+      setFavoriteError('Please log in to save favorites.');
+      return;
+    }
+
+    setFavoriteLoading(true);
+    setFavoriteError('');
+    try {
+      if (favorite) {
+        await favoritesService.removeFavorite(item.id);
+        setFavorite(false);
+      } else {
+        await favoritesService.addFavorite(item.id);
+        setFavorite(true);
+      }
+    } catch (err) {
+      setFavoriteError(err.response?.data?.message || 'Unable to update favorite.');
+    } finally {
+      setFavoriteLoading(false);
+    }
+  }
 
   return (
     <motion.article
@@ -43,11 +84,16 @@ function MenuCard({ item }) {
       <div className={styles.body}>
         <div className={styles.heading}>
           <h3>{item.name}</h3>
-          <button type='button' onClick={() => setFavorite(!favorite)} className={styles.favorite}>
+          <button type='button' onClick={toggleFavorite} className={styles.favorite} disabled={favoriteLoading} aria-label={favorite ? `Remove ${item.name} from favorites` : `Add ${item.name} to favorites`}>
             {favorite ? <FaHeart /> : <FaRegHeart />}
           </button>
         </div>
         <p>{item.description}</p>
+        {favoriteError && <p role='alert'>{favoriteError}</p>}
+        <details>
+          <summary>Reviews</summary>
+          <ReviewSection menuItemId={item.id} />
+        </details>
 
         <div className={styles.footer}>
           <div className={styles.priceBlock}>

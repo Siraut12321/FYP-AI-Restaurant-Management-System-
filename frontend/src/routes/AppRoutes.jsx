@@ -14,6 +14,10 @@ const Contact        = lazy(() => import('../pages/Contact/Contact'));
 const Login          = lazy(() => import('../pages/Login/Login'));
 const Register       = lazy(() => import('../pages/Register/Register'));
 const Cart           = lazy(() => import('../pages/Cart/Cart'));
+const Profile        = lazy(() => import('../pages/Profile/Profile'));
+const OrderHistory   = lazy(() => import('../pages/OrderHistory/OrderHistory'));
+const OrderDetails   = lazy(() => import('../pages/OrderDetails/OrderDetails'));
+const Favorites      = lazy(() => import('../pages/Favorites/Favorites'));
 
 /* ── Admin pages ── */
 const Dashboard      = lazy(() => import('../pages/Dashboard/Dashboard'));
@@ -40,6 +44,12 @@ function AppRoutes() {
             <Route path='/cart'     element={<Cart />} />
             <Route path='/login'    element={<Login />} />
             <Route path='/register' element={<Register />} />
+            <Route element={<ProtectedRoute allowedRoles={['customer']} />}>
+              <Route path='/profile' element={<Profile />} />
+              <Route path='/orders' element={<OrderHistory />} />
+              <Route path='/orders/:id' element={<OrderDetails />} />
+              <Route path='/favorites' element={<Favorites />} />
+            </Route>
           </Route>
 
           {/* ── Admin routes — protected, only admin/staff ── */}
