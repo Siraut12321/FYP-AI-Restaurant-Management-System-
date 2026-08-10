@@ -2,25 +2,37 @@ import Order from '../models/Order.js';
 import MenuItem from '../models/MenuItem.js';
 import AppError from '../utils/AppError.js';
 
-// ─── Place Order ──────────────────────────────────────────────────────────────
-export const createOrder = async (customerId, body) => {
-  const { orderItems, shippingAddress, paymentMethod } = body;
-
-  // Resolve each item from DB and calculate subtotals
+const resolveOrderItems = async (orderItems) => {
   const resolvedItems = await Promise.all(
     orderItems.map(async ({ menuItem, quantity }) => {
       const item = await MenuItem.findById(menuItem);
       if (!item) throw new AppError(`Menu item not found: ${menuItem}`, 404);
       if (!item.isAvailable) throw new AppError(`"${item.dishName}" is currently unavailable`, 400);
 
-      const price    = item.discountPrice ?? item.price;
+      const price = item.discountPrice ?? item.price;
       const subtotal = price * quantity;
 
-      return { menuItem: item._id, dishName: item.dishName, quantity, price, subtotal };
+      return {
+        menuItem: item._id,
+        dishName: item.dishName,
+        quantity,
+        price,
+        subtotal,
+      };
     })
   );
 
-  const totalAmount = resolvedItems.reduce((sum, i) => sum + i.subtotal, 0);
+  return {
+    resolvedItems,
+    totalAmount: resolvedItems.reduce((sum, item) => sum + item.subtotal, 0),
+  };
+};
+
+// ─── Place Order ──────────────────────────────────────────────────────────────
+export const createOrder = async (customerId, body) => {
+  const { orderItems, shippingAddress, paymentMethod } = body;
+
+  const { resolvedItems, totalAmount } = await resolveOrderItems(orderItems);
 
   const order = await Order.create({
     customer: customerId,
@@ -28,6 +40,35 @@ export const createOrder = async (customerId, body) => {
     shippingAddress,
     paymentMethod,
     totalAmount,
+    orderSource: 'Website',
+  });
+
+  return order;
+};
+
+export const createVoiceOrder = async (body) => {
+  const { customer, shippingAddress, orderItems, paymentMethod } = body;
+
+  const { resolvedItems, totalAmount } = await resolveOrderItems(orderItems);
+
+  const order = await Order.create({
+    customer: customer ?? null,
+    customerDetails: customer
+      ? {
+          name: customer.name,
+          phone: customer.phone,
+        }
+      : {
+          name: shippingAddress?.fullName || null,
+          phone: shippingAddress?.phone || null,
+        },
+    orderItems: resolvedItems,
+    shippingAddress,
+    paymentMethod,
+    totalAmount,
+    orderStatus: 'Pending',
+    paymentStatus: 'Pending',
+    orderSource: 'Voice',
   });
 
   return order;
@@ -76,8 +117,10 @@ export const getOrderById = async (orderId, user) => {
 
   if (!order) throw new AppError('Order not found', 404);
 
+  const customerId = order.customer?._id?.toString();
+
   // Customers can only view their own orders
-  if (user.role !== 'admin' && order.customer._id.toString() !== user._id.toString()) {
+  if (user.role !== 'admin' && (!customerId || customerId !== user._id.toString())) {
     throw new AppError('Not authorized to view this order', 403);
   }
 
@@ -92,7 +135,9 @@ export const getOrderTracking = async (orderId, user) => {
 
   if (!order) throw new AppError('Order not found', 404);
 
-  if (user.role !== 'admin' && order.customer._id.toString() !== user._id.toString()) {
+  const customerId = order.customer?._id?.toString();
+
+  if (user.role !== 'admin' && (!customerId || customerId !== user._id.toString())) {
     throw new AppError('Not authorized to view this order', 403);
   }
 

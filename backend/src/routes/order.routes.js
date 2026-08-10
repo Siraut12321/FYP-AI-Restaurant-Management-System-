@@ -1,12 +1,14 @@
 import { Router } from 'express';
-import { protect, restrictTo } from '../middleware/auth.middleware.js';
+import { protect, requireVoiceApiKey, restrictTo } from '../middleware/auth.middleware.js';
 import {
   createOrderValidator,
+  createVoiceOrderValidator,
   updateStatusValidator,
   mongoIdValidator,
 } from '../validators/order.validator.js';
 import {
   createOrder,
+  createVoiceOrder,
   getMyOrders,
   getAllOrders,
   getOrderById,
@@ -17,7 +19,10 @@ import {
 
 const router = Router();
 
-// ─── All order routes require authentication ──────────────────────────────────
+// ─── Machine-to-machine voice order route does not require JWT ──────────────
+router.post('/voice', requireVoiceApiKey, createVoiceOrderValidator, createVoiceOrder);
+
+// ─── All remaining order routes require authentication ───────────────────────
 router.use(protect);
 
 // ─── Customer Routes ──────────────────────────────────────────────────────────

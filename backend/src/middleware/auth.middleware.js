@@ -30,6 +30,20 @@ export const protect = async (req, _res, next) => {
 };
 
 // ─── Role-based access control ────────────────────────────────────────────────
+export const requireVoiceApiKey = (req, _res, next) => {
+  const providedKey = req.headers['x-api-key'];
+
+  if (!providedKey) {
+    return next(new AppError('Missing API key.', 401));
+  }
+
+  if (!process.env.VOICE_ORDER_API_KEY || providedKey !== process.env.VOICE_ORDER_API_KEY) {
+    return next(new AppError('Invalid API key.', 401));
+  }
+
+  next();
+};
+
 export const restrictTo = (...roles) => (req, _res, next) => {
   if (!roles.includes(req.user.role)) {
     return next(new AppError('You do not have permission to perform this action.', 403));

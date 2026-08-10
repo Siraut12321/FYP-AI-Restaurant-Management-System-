@@ -11,6 +11,16 @@ export const createOrder = async (req, res, next) => {
   }
 };
 
+// ─── Place Voice Order (Machine-to-Machine) ──────────────────────────────────
+export const createVoiceOrder = async (req, res, next) => {
+  try {
+    const order = await orderService.createVoiceOrder(req.body);
+    sendSuccess(res, 201, 'Voice order placed successfully', order);
+  } catch (err) {
+    next(err);
+  }
+};
+
 // ─── Get My Orders (Customer) ─────────────────────────────────────────────────
 export const getMyOrders = async (req, res, next) => {
   try {

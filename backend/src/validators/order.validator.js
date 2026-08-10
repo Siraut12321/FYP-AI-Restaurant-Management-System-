@@ -50,6 +50,67 @@ export const createOrderValidator = [
   validate,
 ];
 
+export const createVoiceOrderValidator = [
+  body('customer')
+    .optional({ nullable: true })
+    .isObject().withMessage('Customer must be an object when provided'),
+
+  body('customer.name')
+    .optional({ nullable: true })
+    .trim()
+    .notEmpty().withMessage('Customer name is required when customer is provided'),
+
+  body('customer.phone')
+    .optional({ nullable: true })
+    .trim()
+    .notEmpty().withMessage('Customer phone is required when customer is provided'),
+
+  body('shippingAddress')
+    .notEmpty().withMessage('Shipping address is required'),
+
+  body('shippingAddress.fullName')
+    .trim()
+    .notEmpty().withMessage('Full name is required'),
+
+  body('shippingAddress.phone')
+    .trim()
+    .notEmpty().withMessage('Phone number is required'),
+
+  body('shippingAddress.address')
+    .trim()
+    .notEmpty().withMessage('Address is required'),
+
+  body('shippingAddress.city')
+    .trim()
+    .notEmpty().withMessage('City is required'),
+
+  body('orderItems')
+    .isArray({ min: 1 }).withMessage('At least one order item is required'),
+
+  body('orderItems.*.menuItem')
+    .notEmpty().withMessage('Menu item ID is required')
+    .isMongoId().withMessage('Invalid menu item ID'),
+
+  body('orderItems.*.quantity')
+    .notEmpty().withMessage('Quantity is required')
+    .isInt({ gt: 0 }).withMessage('Quantity must be greater than zero'),
+
+  body('paymentMethod')
+    .notEmpty().withMessage('Payment method is required')
+    .isIn(['Cash on Delivery', 'Card', 'Online'])
+    .withMessage('Payment method must be Cash on Delivery, Card, or Online'),
+
+  body('price').not().exists().withMessage('price is not allowed'),
+  body('subtotal').not().exists().withMessage('subtotal is not allowed'),
+  body('totalAmount').not().exists().withMessage('totalAmount is not allowed'),
+  body('dishName').not().exists().withMessage('dishName is not allowed'),
+  body('orderStatus').not().exists().withMessage('orderStatus is not allowed'),
+  body('paymentStatus').not().exists().withMessage('paymentStatus is not allowed'),
+  body('orderSource').not().exists().withMessage('orderSource is not allowed'),
+
+  validate,
+];
+
 // ─── Update Order Status ──────────────────────────────────────────────────────
 export const updateStatusValidator = [
   param('id')

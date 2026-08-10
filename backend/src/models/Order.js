@@ -26,7 +26,18 @@ const orderSchema = new mongoose.Schema(
     customer: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'User',
-      required: true,
+      default: null,
+    },
+
+    customerDetails: {
+      name: { type: String, trim: true },
+      phone: { type: String, trim: true },
+    },
+
+    orderSource: {
+      type: String,
+      enum: ['Website', 'Voice'],
+      default: 'Website',
     },
 
     orderItems: {
