@@ -166,6 +166,27 @@ export const updateOrderStatus = async (orderId, orderStatus) => {
   if (orderStatus === 'Delivered') order.paymentStatus = 'Paid';
 
   await order.save();
+
+  // Notify n8n webhook about status change. Failures here must not block the main flow.
+  try {
+    const webhookUrl = process.env.N8N_STATUS_WEBHOOK;
+    if (webhookUrl) {
+      await fetch(webhookUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          orderId: order._id.toString(),
+          status: order.orderStatus,
+          customerName: order.shippingAddress?.fullName || '',
+          phone: order.shippingAddress?.phone || '',
+          email: order.customerDetails?.email || '',
+        }),
+      });
+    }
+  } catch (err) {
+    console.error('n8n status webhook failed:', err);
+  }
+
   return order;
 };
 
