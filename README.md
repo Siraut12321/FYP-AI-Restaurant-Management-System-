@@ -184,6 +184,12 @@ CLOUDINARY_API_KEY=your_api_key
 CLOUDINARY_API_SECRET=your_api_secret
 ```
 
+Add the following optional webhook variable to forward admin order status changes to an n8n workflow (POST JSON):
+
+```env
+N8N_STATUS_WEBHOOK=https://example.n8n.cloud/webhook/your-webhook-id
+```
+
 The `VOICE_ORDER_API_KEY` is used only for the machine-to-machine voice order endpoint and must never be exposed to the frontend.
 
 ### 4. Run the application
@@ -222,3 +228,21 @@ This project is for academic and development purposes as part of a final year pr
 
 ## Contributors
 - FYP Team
+
+## n8n Order Status Webhook
+
+If you configure `N8N_STATUS_WEBHOOK`, the backend will POST a JSON payload to that URL every time an admin updates an order's `orderStatus`. Failures when calling the webhook are logged but do not prevent the status update from succeeding.
+
+Payload (Content-Type: application/json):
+
+```json
+{
+  "orderId": "<order id string>",
+  "status": "Pending|Preparing|Ready|Delivered|Cancelled",
+  "customerName": "Full Name or empty string",
+  "phone": "Phone number or empty string",
+  "email": "Customer email or empty string"
+}
+```
+
+Use this webhook to trigger downstream automations (SMS, WhatsApp, kitchen display, etc.).

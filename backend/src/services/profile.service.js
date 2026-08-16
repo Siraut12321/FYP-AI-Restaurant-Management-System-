@@ -2,6 +2,7 @@ import User from '../models/User.js';
 import Order from '../models/Order.js';
 import cloudinary from '../config/cloudinaryConfig.js';
 import AppError from '../utils/AppError.js';
+import { normalizePhoneForLookup } from '../utils/phone.js';
 
 // ─── Extract Cloudinary public_id from URL ────────────────────────────────────
 const extractPublicId = (url) => {
@@ -15,12 +16,18 @@ const extractPublicId = (url) => {
 
 // ─── Get Profile ──────────────────────────────────────────────────────────────
 export const getProfile = async (userId) => {
-  const [user, totalOrders] = await Promise.all([
-    User.findById(userId).select('name email role avatar phone address createdAt updatedAt'),
-    Order.countDocuments({ customer: userId }),
-  ]);
-
+  const user = await User.findById(userId).select('name email role avatar phone address createdAt updatedAt');
   if (!user) throw new AppError('User not found', 404);
+
+  const phone = user.phone || null;
+  const filters = [{ customer: userId }];
+  const phoneCandidates = normalizePhoneForLookup(phone);
+  if (phoneCandidates.length) {
+    filters.push({ 'customerDetails.phone': { $in: phoneCandidates } });
+    filters.push({ 'shippingAddress.phone': { $in: phoneCandidates } });
+  }
+
+  const totalOrders = await Order.countDocuments({ $or: filters });
 
   return { ...user.toObject(), totalOrders };
 };

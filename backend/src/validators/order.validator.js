@@ -51,6 +51,11 @@ export const createOrderValidator = [
 ];
 
 export const createVoiceOrderValidator = [
+  // Accept a server-side user identifier when provided by trusted voice systems
+  body('userId')
+    .optional({ nullable: true })
+    .isMongoId().withMessage('Invalid userId'),
+
   body('customer')
     .optional({ nullable: true })
     .isObject().withMessage('Customer must be an object when provided'),

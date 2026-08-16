@@ -24,7 +24,7 @@ export const createVoiceOrder = async (req, res, next) => {
 // ─── Get My Orders (Customer) ─────────────────────────────────────────────────
 export const getMyOrders = async (req, res, next) => {
   try {
-    const orders = await orderService.getMyOrders(req.user._id);
+    const orders = await orderService.getMyOrders(req.user._id, req.user.phone);
     sendSuccess(res, 200, 'Your orders fetched successfully', orders);
   } catch (err) {
     next(err);
