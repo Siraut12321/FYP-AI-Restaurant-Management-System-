@@ -1,6 +1,7 @@
 import jwt from 'jsonwebtoken';
 import User from '../models/User.js';
 import AppError from '../utils/AppError.js';
+import { sendWelcomeEmail } from './email.service.js';
 
 // ─── Generate JWT ──────────────────────────────────────────────────────────────
 const generateToken = (userId) =>
@@ -23,7 +24,14 @@ export const registerUser = async ({ name, email, password, role }) => {
   const existing = await User.findOne({ email });
   if (existing) throw new AppError('Email is already registered', 409);
 
-  const user  = await User.create({ name, email, password, role });
+  const user = await User.create({ name, email, password, role });
+
+  try {
+    await sendWelcomeEmail(user);
+  } catch (error) {
+    console.error('Welcome email failed:', error);
+  }
+
   const token = generateToken(user._id);
 
   return { user: sanitizeUser(user), token };

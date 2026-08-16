@@ -4,6 +4,7 @@ import MenuItem from '../models/MenuItem.js';
 import AppError from '../utils/AppError.js';
 import User from '../models/User.js';
 import { normalizePhoneForLookup } from '../utils/phone.js';
+import { sendOrderConfirmationEmail } from './email.service.js';
 
 const resolveOrderItems = async (orderItems) => {
   const resolvedItems = await Promise.all(
@@ -251,54 +252,10 @@ const sendOrderNotifications = async (orderId) => {
       }
     }
 
-    // Optional email: only if SMTP env vars are configured
-    if (process.env.SMTP_HOST && process.env.SMTP_USER && process.env.SMTP_PASS && process.env.EMAIL_FROM) {
-      try {
-        // dynamic require so nodemailer is optional
-        // eslint-disable-next-line global-require, import/no-extraneous-dependencies
-        const nodemailer = require('nodemailer');
-
-        const transporter = nodemailer.createTransport({
-          host: process.env.SMTP_HOST,
-          port: parseInt(process.env.SMTP_PORT || '587', 10),
-          secure: (process.env.SMTP_SECURE === 'true') || false,
-          auth: {
-            user: process.env.SMTP_USER,
-            pass: process.env.SMTP_PASS,
-          },
-        });
-
-        const toEmail = order.customer?.email || process.env.EMAIL_FALLBACK_TO || null;
-        if (!toEmail) return;
-
-        const itemsHtml = items.map((it) => `
-          <tr>
-            <td style="padding:8px;border-radius:6px;vertical-align:top"><img src="${it.image || ''}" alt="${it.dishName}" width="96" style="border-radius:8px;object-fit:cover"/></td>
-            <td style="padding:8px;vertical-align:top"><strong>${it.dishName}</strong><br/>Qty: ${it.quantity}<br/>Price: PKR ${it.price}</td>
-          </tr>
-        `).join('');
-
-        const html = `
-          <div style="font-family:Arial,Helvetica,sans-serif;color:#111;background:#0b0b0b;padding:20px;border-radius:10px">
-            <h2 style="color:#ffd166">🌶️ Hot & Spicy — Order Confirmed</h2>
-            <p>Assalamu Alaikum ${order.customer?.name || ''},</p>
-            <p>Thank you for your order! Here is your order summary:</p>
-            <table style="width:100%;border-collapse:collapse;color:#eee">${itemsHtml}</table>
-            <p><strong>Total: PKR ${order.totalAmount}</strong></p>
-            <p>Payment: ${order.paymentMethod}<br/>Status: ${order.orderStatus}</p>
-            <p>Thank you for ordering from Hot & Spicy ❤️</p>
-          </div>
-        `;
-
-        await transporter.sendMail({
-          from: process.env.EMAIL_FROM,
-          to: toEmail,
-          subject: `🌶️ Hot & Spicy — Order Confirmed #${order._id.toString()}`,
-          html,
-        });
-      } catch (err) {
-        console.error('Order confirmation email failed:', err);
-      }
+    try {
+      await sendOrderConfirmationEmail(order);
+    } catch (err) {
+      console.error('Order confirmation email failed:', err);
     }
   } catch (err) {
     console.error('sendOrderNotifications error:', err);
