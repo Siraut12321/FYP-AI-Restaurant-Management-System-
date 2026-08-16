@@ -1,25 +1,27 @@
-import nodemailer from 'nodemailer';
+import { Resend } from 'resend';
 
-const hasSmtpConfig = () => Boolean(
-  process.env.SMTP_HOST &&
-  process.env.SMTP_USER &&
-  process.env.SMTP_PASS &&
-  process.env.EMAIL_FROM
-);
-
-const buildTransporter = () => {
-  if (!hasSmtpConfig()) return null;
-
-  return nodemailer.createTransport({
-    host: process.env.SMTP_HOST,
-    port: parseInt(process.env.SMTP_PORT || '587', 10),
-    secure: process.env.SMTP_SECURE === 'true',
-    auth: {
-      user: process.env.SMTP_USER,
-      pass: process.env.SMTP_PASS,
-    },
-  });
+const getResendClient = () => {
+  const apiKey = process.env.RESEND_API_KEY;
+  if (!apiKey) return null;
+  return new Resend(apiKey);
 };
+
+export const resend = {
+  emails: {
+    send: async (payload) => {
+      const client = getResendClient();
+      if (!client) {
+        throw new Error('RESEND_API_KEY is not configured.');
+      }
+      return client.emails.send(payload);
+    },
+  },
+};
+
+const hasResendConfig = () => Boolean(
+  process.env.RESEND_API_KEY &&
+  process.env.RESEND_FROM_EMAIL
+);
 
 const formatOrderId = (orderId) => {
   if (!orderId) return 'N/A';
@@ -32,13 +34,10 @@ export const sendWelcomeEmail = async (user) => {
     return;
   }
 
-  if (!hasSmtpConfig()) {
-    console.info('Welcome email skipped: SMTP is not configured.');
+  if (!hasResendConfig()) {
+    console.info('Welcome email skipped: Resend is not configured.');
     return;
   }
-
-  const transporter = buildTransporter();
-  if (!transporter) return;
 
   const name = user.name || 'Customer';
   const bodyText = `Welcome to Hot & Spicy Restaurant, ${name}! 🍕\n\nThank you for creating your account with us.\n\nYour account has been successfully created and you're now ready to explore our menu, place orders, and enjoy your favorite meals.\n\nWe’re happy to have you with us!\n\nBest regards,\nHot & Spicy Restaurant`;
@@ -54,8 +53,14 @@ export const sendWelcomeEmail = async (user) => {
     </div>
   `;
 
-  await transporter.sendMail({
-    from: process.env.EMAIL_FROM,
+  const resendClient = getResendClient();
+  if (!resendClient) {
+    console.info('Welcome email skipped: Resend API key is not set.');
+    return;
+  }
+
+  await resend.emails.send({
+    from: process.env.RESEND_FROM_EMAIL,
     to: user.email,
     subject: 'Welcome to Hot & Spicy Restaurant! 🍕',
     text: bodyText,
@@ -66,8 +71,8 @@ export const sendWelcomeEmail = async (user) => {
 export const sendOrderConfirmationEmail = async (order) => {
   if (!order) return;
 
-  if (!hasSmtpConfig()) {
-    console.info('Order confirmation email skipped: SMTP is not configured.');
+  if (!hasResendConfig()) {
+    console.info('Order confirmation email skipped: Resend is not configured.');
     return;
   }
 
@@ -78,9 +83,6 @@ export const sendOrderConfirmationEmail = async (order) => {
     console.warn('Order confirmation email skipped: customer email not found for order.', { orderId: order._id?.toString?.() || 'unknown' });
     return;
   }
-
-  const transporter = buildTransporter();
-  if (!transporter) return;
 
   const customerName = customer?.name || order.customerDetails?.name || order.shippingAddress?.fullName || 'Customer';
   const orderId = formatOrderId(order._id);
@@ -147,8 +149,14 @@ export const sendOrderConfirmationEmail = async (order) => {
     </div>
   `;
 
-  await transporter.sendMail({
-    from: process.env.EMAIL_FROM,
+  const resendClient = getResendClient();
+  if (!resendClient) {
+    console.info('Order confirmation email skipped: Resend API key is not set.');
+    return;
+  }
+
+  await resend.emails.send({
+    from: process.env.RESEND_FROM_EMAIL,
     to: customerEmail,
     subject: 'Order Confirmed — Hot & Spicy Restaurant 🍕',
     text: textBody,
