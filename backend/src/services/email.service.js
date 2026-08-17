@@ -174,11 +174,40 @@ export const sendOrderConfirmationEmail = async (order) => {
     // Format order ID for display
     const orderId = formatOrderId(order._id);
 
-    // Prepare template parameters - keep compatible with existing template
+    const orderItemsForEmail = (order.orderItems || []).map((item) => ({
+      image_url: item.menuItem?.image || item.image_url || null,
+      name: item.dishName || item.menuItem?.dishName || null,
+      units: Number(item.quantity ?? 0),
+      price: Number(item.price ?? 0),
+    }));
+
+    const shipping = Number(order.shippingFee ?? order.shippingAmount ?? 0);
+    const tax = Number(order.tax ?? order.taxAmount ?? 0);
+    const total = Number(order.totalAmount ?? 0);
+
     const templateParams = {
       order_id: orderId,
       email: customerEmail,
+      orders: orderItemsForEmail,
+      cost: {
+        shipping,
+        tax,
+        total,
+      },
     };
+
+    console.info('ORDER EMAIL: payload preview before send', {
+      order_id: orderId,
+      orderItemCount: orderItemsForEmail.length,
+      firstItemName: orderItemsForEmail[0]?.name || null,
+      firstItemPrice: orderItemsForEmail[0]?.price ?? null,
+      firstItemQuantity: orderItemsForEmail[0]?.units ?? null,
+      hasImageUrl: Boolean(orderItemsForEmail[0]?.image_url),
+      shipping,
+      tax,
+      total,
+      hasCustomerEmail: Boolean(customerEmail),
+    });
 
     console.info('ORDER EMAIL: attempting EmailJS send', {
       orderId: order._id?.toString?.() || 'unknown',
