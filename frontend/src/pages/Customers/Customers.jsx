@@ -1,10 +1,10 @@
-import { useMemo } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { motion } from 'framer-motion';
 import {
   MdPeople, MdVerifiedUser,
   MdStar, MdAttachMoney, MdShoppingBag,
 } from 'react-icons/md';
-import { customerService } from '../../services/customerService';
+import customerService from '../../services/customerService';
 import styles from './Customers.module.css';
 
 const fadeUp = {
@@ -13,48 +13,53 @@ const fadeUp = {
 };
 
 function Customers() {
-  const customers = useMemo(() => customerService.listCustomers(), []);
+  const [customers, setCustomers] = useState([]);
+  const [summary, setSummary]     = useState(null);
+  const [loading, setLoading]     = useState(true);
+  const [error, setError]         = useState('');
 
-  const total    = customers.length;
-  const active   = customers.filter((c) => c.status === 'active').length;
-  const inactive = customers.filter((c) => c.status === 'inactive').length;
-  const totalOrders   = customers.reduce((s, c) => s + c.orders, 0);
-  const totalSpending = customers.reduce((s, c) => s + c.spending, 0);
-  const avgSpending   = total ? Math.round(totalSpending / total) : 0;
-  const topSpender    = customers.reduce((a, b) => (a.spending > b.spending ? a : b), customers[0] || {});
+  useEffect(() => {
+    customerService.getCustomers()
+      .then(({ customers: list, summary: sum }) => {
+        setCustomers(list);
+        setSummary(sum);
+      })
+      .catch((err) => setError(err.response?.data?.message || 'Failed to load customers.'))
+      .finally(() => setLoading(false));
+  }, []);
+
+  const total        = summary?.total        ?? 0;
+  const active       = summary?.active       ?? 0;
+  const inactive     = summary?.inactive     ?? 0;
+  const totalOrders  = summary?.totalOrders  ?? 0;
+  const totalSpending= summary?.totalSpending?? 0;
+  const avgSpending  = summary?.avgSpending  ?? 0;
+  const topSpender   = summary?.topSpender   ?? null;
 
   const COUNTERS = [
-    {
-      icon: <MdPeople />,      label: 'Total Customers', value: total,
-      color: 'var(--admin-gold)',    dim: 'var(--admin-gold-dim)',
-      sub: 'All registered diners',
-    },
-    {
-      icon: <MdVerifiedUser />, label: 'Active',          value: active,
-      color: 'var(--admin-success)', dim: 'var(--admin-success-dim)',
-      sub: 'Ordered in last 30 days',
-    },
-    {
-      icon: <MdPeople />,      label: 'Inactive',        value: inactive,
-      color: 'var(--admin-danger)',  dim: 'var(--admin-danger-dim)',
-      sub: 'No recent activity',
-    },
-    {
-      icon: <MdShoppingBag />, label: 'Total Orders',    value: totalOrders,
-      color: 'var(--admin-info)',    dim: 'var(--admin-info-dim)',
-      sub: 'Across all customers',
-    },
-    {
-      icon: <MdAttachMoney />, label: 'Total Revenue',   value: `₨ ${totalSpending.toLocaleString()}`,
-      color: 'var(--admin-orange)',  dim: 'var(--admin-orange-dim)',
-      sub: 'Lifetime customer spend',
-    },
-    {
-      icon: <MdAttachMoney />, label: 'Avg. Spending',   value: `₨ ${avgSpending.toLocaleString()}`,
-      color: 'var(--admin-gold)',    dim: 'var(--admin-gold-dim)',
-      sub: 'Per customer lifetime',
-    },
+    { icon: <MdPeople />,      label: 'Total Customers', value: total,                                    color: 'var(--admin-gold)',    dim: 'var(--admin-gold-dim)',    sub: 'All registered diners' },
+    { icon: <MdVerifiedUser />,label: 'Active',          value: active,                                   color: 'var(--admin-success)', dim: 'var(--admin-success-dim)', sub: 'Ordered in last 30 days' },
+    { icon: <MdPeople />,      label: 'Inactive',        value: inactive,                                 color: 'var(--admin-danger)',  dim: 'var(--admin-danger-dim)',  sub: 'No recent activity' },
+    { icon: <MdShoppingBag />, label: 'Total Orders',    value: totalOrders,                              color: 'var(--admin-info)',    dim: 'var(--admin-info-dim)',    sub: 'Across all customers' },
+    { icon: <MdAttachMoney />, label: 'Total Revenue',   value: `₨ ${totalSpending.toLocaleString()}`,   color: 'var(--admin-orange)',  dim: 'var(--admin-orange-dim)', sub: 'Lifetime customer spend' },
+    { icon: <MdAttachMoney />, label: 'Avg. Spending',   value: `₨ ${avgSpending.toLocaleString()}`,     color: 'var(--admin-gold)',    dim: 'var(--admin-gold-dim)',   sub: 'Per customer lifetime' },
   ];
+
+  if (loading) {
+    return (
+      <div style={{ padding: '48px', textAlign: 'center', color: '#a1a1aa' }}>
+        Loading customers…
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div style={{ padding: '48px', textAlign: 'center', color: 'var(--admin-danger)' }}>
+        {error}
+      </div>
+    );
+  }
 
   return (
     <div>
@@ -120,38 +125,44 @@ function Customers() {
           <span className={styles.listCount}>{total} total</span>
         </div>
         <div className={styles.listBody}>
-          {customers.map((c, i) => (
-            <motion.div
-              key={c.id}
-              className={styles.listRow}
-              variants={fadeUp} initial="hidden" animate="visible" custom={i}
-            >
-              <div className={styles.rowAvatar}>
-                {c.name.split(' ').map((w) => w[0]).join('').slice(0, 2).toUpperCase()}
-              </div>
-              <div className={styles.rowInfo}>
-                <div className={styles.rowName}>{c.name}</div>
-                <div className={styles.rowMeta}>{c.email} · {c.phone}</div>
-              </div>
-              <div className={styles.rowStats}>
-                <span className={styles.rowStat}>
-                  <MdShoppingBag style={{ fontSize: '0.85rem' }} /> {c.orders} orders
-                </span>
-                <span className={styles.rowStat} style={{ color: 'var(--admin-gold)' }}>
-                  ₨ {c.spending.toLocaleString()}
-                </span>
-              </div>
-              <span
-                className={styles.statusBadge}
-                style={{
-                  background: c.status === 'active' ? 'var(--admin-success-dim)' : 'var(--admin-danger-dim)',
-                  color:      c.status === 'active' ? 'var(--admin-success)'     : 'var(--admin-danger)',
-                }}
+          {customers.length === 0 ? (
+            <div style={{ padding: '32px', textAlign: 'center', color: '#71717a', fontSize: '0.875rem' }}>
+              No customers found.
+            </div>
+          ) : (
+            customers.map((c, i) => (
+              <motion.div
+                key={c.id}
+                className={styles.listRow}
+                variants={fadeUp} initial="hidden" animate="visible" custom={i}
               >
-                {c.status}
-              </span>
-            </motion.div>
-          ))}
+                <div className={styles.rowAvatar}>
+                  {c.name.split(' ').map((w) => w[0]).join('').slice(0, 2).toUpperCase()}
+                </div>
+                <div className={styles.rowInfo}>
+                  <div className={styles.rowName}>{c.name}</div>
+                  <div className={styles.rowMeta}>{c.email} · {c.phone}</div>
+                </div>
+                <div className={styles.rowStats}>
+                  <span className={styles.rowStat}>
+                    <MdShoppingBag style={{ fontSize: '0.85rem' }} /> {c.orders} orders
+                  </span>
+                  <span className={styles.rowStat} style={{ color: 'var(--admin-gold)' }}>
+                    ₨ {c.spending.toLocaleString()}
+                  </span>
+                </div>
+                <span
+                  className={styles.statusBadge}
+                  style={{
+                    background: c.status === 'active' ? 'var(--admin-success-dim)' : 'var(--admin-danger-dim)',
+                    color:      c.status === 'active' ? 'var(--admin-success)'     : 'var(--admin-danger)',
+                  }}
+                >
+                  {c.status}
+                </span>
+              </motion.div>
+            ))
+          )}
         </div>
       </motion.div>
     </div>

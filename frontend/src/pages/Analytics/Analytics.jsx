@@ -21,7 +21,7 @@ function Analytics() {
     const fetch = async () => {
       try {
         const data = await analyticsService.getDashboardStats();
-        setStats(data.data);
+        setStats(data);
       } catch (err) {
         setError(err.response?.data?.message || 'Failed to load analytics.');
       } finally {

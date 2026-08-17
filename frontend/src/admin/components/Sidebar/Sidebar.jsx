@@ -1,4 +1,4 @@
-import { useContext } from 'react';
+import { useContext, useEffect, useState } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import {
@@ -14,15 +14,16 @@ import {
   MdSmartToy,
 } from 'react-icons/md';
 import { AuthContext } from '../../../context/AuthContext';
+import api from '../../../api/api';
 import styles from './Sidebar.module.css';
 
 const NAV_SECTIONS = [
   {
     label: 'Main',
     items: [
-      { to: '/admin/dashboard', icon: <MdDashboard />,     label: 'Dashboard'        },
-      { to: '/admin/orders',    icon: <MdShoppingBag />,   label: 'Orders', badge: 3  },
-      { to: '/admin/customers', icon: <MdPeople />,        label: 'Customers'        },
+      { to: '/admin/dashboard', icon: <MdDashboard />,     label: 'Dashboard'  },
+      { to: '/admin/orders',    icon: <MdShoppingBag />,   label: 'Orders'     },
+      { to: '/admin/customers', icon: <MdPeople />,        label: 'Customers'  },
     ],
   },
   {
@@ -55,6 +56,13 @@ const sidebarVariants = {
 function Sidebar({ collapsed, mobileOpen, onClose }) {
   const { logout } = useContext(AuthContext);
   const navigate   = useNavigate();
+  const [pendingCount, setPendingCount] = useState(0);
+
+  useEffect(() => {
+    api.get('/analytics/dashboard')
+      .then(({ data }) => setPendingCount(data.data?.pendingOrders ?? 0))
+      .catch(() => {});
+  }, []);
 
   function handleLogout() {
     logout();
@@ -111,8 +119,8 @@ function Sidebar({ collapsed, mobileOpen, onClose }) {
               >
                 <span className={styles.navIcon}>{item.icon}</span>
                 <span className={styles.navLabel}>{item.label}</span>
-                {item.badge && (
-                  <span className={styles.badge}>{item.badge}</span>
+                {item.to === '/admin/orders' && pendingCount > 0 && (
+                  <span className={styles.badge}>{pendingCount}</span>
                 )}
                 {/* Tooltip shown only when collapsed on desktop */}
                 <span className={styles.tooltip}>{item.label}</span>

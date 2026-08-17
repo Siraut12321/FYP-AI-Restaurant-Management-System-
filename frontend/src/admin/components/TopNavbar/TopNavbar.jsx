@@ -104,7 +104,6 @@ function TopNavbar({ onToggleSidebar, collapsed }) {
         {/* Messages */}
         <button className={styles.iconBtn} aria-label="Messages">
           <MdMessage />
-          <span className={styles.dot} />
         </button>
 
         {/* Notifications */}

@@ -53,6 +53,7 @@ import profileRoutes   from './routes/profile.routes.js';
 import favoritesRoutes from './routes/favorites.routes.js';
 import reviewRoutes    from './routes/review.routes.js';
 import ttsRoutes       from './routes/tts.routes.js';
+import adminRoutes     from './routes/admin.routes.js';
 
 app.use('/api/v1/auth',      authRoutes);
 app.use('/api/v1/menu',      menuRoutes);
@@ -62,6 +63,7 @@ app.use('/api/v1/profile',   profileRoutes);
 app.use('/api/v1/favorites', favoritesRoutes);
 app.use('/api/v1/reviews',   reviewRoutes);
 app.use('/api/v1/tts',       ttsRoutes);
+app.use('/api/v1/admin',     adminRoutes);
 
 // ─── Dev-only seed endpoint ───────────────────────────────────────────────────
 if (process.env.NODE_ENV === 'development') {
