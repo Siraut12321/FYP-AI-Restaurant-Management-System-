@@ -48,6 +48,49 @@ const formatOrderId = (orderId) => {
   return String(orderId).slice(-8).toUpperCase();
 };
 
+const getSafeErrorDetails = (error) => {
+  const details = {
+    name: error?.name || null,
+    message: error?.message || null,
+    code: error?.code || null,
+    type: error?.type || null,
+    status: error?.status ?? null,
+    statusCode: error?.statusCode ?? null,
+    responseStatus: error?.response?.status ?? null,
+    responseText: null,
+    responseData: null,
+    stack: null,
+  };
+
+  if (error?.response) {
+    if (typeof error.response?.status === 'number') {
+      details.responseStatus = error.response.status;
+    }
+
+    if (error.response?.data !== undefined) {
+      details.responseData = error.response.data;
+    }
+
+    if (error.response?.text !== undefined) {
+      details.responseText = error.response.text;
+    }
+  }
+
+  if (error?.text !== undefined) {
+    details.responseText = error.text;
+  }
+
+  if (typeof error?.stack === 'string') {
+    const redactedStack = error.stack
+      .replace(/(EMAILJS_PRIVATE_KEY|EMAILJS_PUBLIC_KEY|PRIVATE_KEY|PUBLIC_KEY|authorization|Authorization|cookie|Cookie|token|Token|api[_-]?key|API[_-]?KEY)=?[^\s\r\n]+/gi, '$1=[REDACTED]')
+      .replace(/(Bearer\s+)[A-Za-z0-9._-]+/gi, '$1[REDACTED]');
+
+    details.stack = redactedStack.length > 2000 ? redactedStack.slice(0, 2000) : redactedStack;
+  }
+
+  return details;
+};
+
 export const sendWelcomeEmail = async (user) => {
   if (!user?.email) {
     console.warn('Welcome email skipped: missing user email.');
@@ -78,7 +121,7 @@ export const sendWelcomeEmail = async (user) => {
 
     console.log('Welcome email sent successfully to:', user.email);
   } catch (error) {
-    console.error('Welcome email send failed:', error?.message || 'Unknown error');
+    console.error('Welcome email send failed:', getSafeErrorDetails(error));
   }
 };
 
@@ -160,8 +203,7 @@ export const sendOrderConfirmationEmail = async (order) => {
     // Log error but do NOT throw - order must remain created
     console.error('ORDER EMAIL: send failed', {
       orderId: order._id?.toString?.() || 'unknown',
-      message: error?.message || 'Unknown error',
-      response: error?.response || null,
+      ...getSafeErrorDetails(error),
     });
   }
 };
