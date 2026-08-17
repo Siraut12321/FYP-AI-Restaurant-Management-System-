@@ -31,7 +31,7 @@ function Contact() {
             </div>
             <div className={styles.infoItem}>
               <strong>Email</strong>
-              <span>hello@urduaibistro.com</span>
+              <span>hello@hotandspicy.com</span>
             </div>
           </div>
           <div className={styles.socialLinks}>

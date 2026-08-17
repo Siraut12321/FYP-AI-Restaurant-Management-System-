@@ -45,6 +45,7 @@ This project provides a complete foundation for a smart restaurant ecosystem wit
 - JWT-based authentication
 - Voice order API security with `x-api-key`
 - Cloudinary integration for image uploads
+- Resend API for welcome and order confirmation emails
 - Vite-powered React frontend for fast development
 
 ## Customer Experience API
@@ -182,6 +183,8 @@ VOICE_ORDER_API_KEY=your_voice_api_secret
 CLOUDINARY_CLOUD_NAME=your_cloud_name
 CLOUDINARY_API_KEY=your_api_key
 CLOUDINARY_API_SECRET=your_api_secret
+RESEND_API_KEY=your_resend_api_key
+RESEND_FROM_EMAIL=hello@yourdomain.com
 ```
 
 Add the following optional webhook variable to forward admin order status changes to an n8n workflow (POST JSON):
@@ -189,6 +192,8 @@ Add the following optional webhook variable to forward admin order status change
 ```env
 N8N_STATUS_WEBHOOK=https://example.n8n.cloud/webhook/your-webhook-id
 ```
+
+The backend uses Resend for the welcome email and order confirmation email flow. The sender address is set via `RESEND_FROM_EMAIL`, and email delivery is non-blocking so registration and order creation still succeed even if the email request fails.
 
 The `VOICE_ORDER_API_KEY` is used only for the machine-to-machine voice order endpoint and must never be exposed to the frontend.
 

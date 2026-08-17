@@ -78,7 +78,7 @@ function Sidebar({ collapsed, mobileOpen, onClose }) {
       <NavLink to='/admin/dashboard' className={styles.brand} onClick={onClose}>
         <div className={styles.brandIcon}>🍽️</div>
         <div className={styles.brandText}>
-          <span className={styles.brandName}>UrduAI Bistro</span>
+          <span className={styles.brandName}>Hot & Spicy</span>
           <span className={styles.brandSub}>Admin Panel</span>
         </div>
       </NavLink>

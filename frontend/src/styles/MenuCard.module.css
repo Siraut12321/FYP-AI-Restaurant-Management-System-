@@ -1,22 +1,28 @@
 .card {
   position: relative;
-  background: linear-gradient(145deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.03));
-  border: 1px solid rgba(255, 255, 255, 0.09);
-  border-radius: 24px;
+  background: linear-gradient(145deg, rgba(255, 255, 255, 0.06), rgba(255, 255, 255, 0.02));
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  border-radius: 20px;
   overflow: hidden;
   display: grid;
-  grid-template-rows: 220px auto;
-  box-shadow: 0 16px 44px rgba(0, 0, 0, 0.2);
+  grid-template-rows: auto 1fr;
+  min-height: 380px;
+  box-shadow: 0 14px 44px rgba(4, 8, 20, 0.35);
   transition: box-shadow 0.25s ease, transform 0.25s ease;
 }
 
 .card:hover {
-  box-shadow: 0 24px 70px rgba(0, 0, 0, 0.28);
+  transform: translateY(-6px);
+  box-shadow: 0 36px 90px rgba(3, 8, 25, 0.48);
 }
 
 .imageWrap {
   position: relative;
   overflow: hidden;
+  /* Keep a consistent visual area regardless of image aspect ratio */
+  aspect-ratio: 4 / 3;
+  width: 100%;
+  background: linear-gradient(180deg, rgba(0,0,0,0.04), rgba(0,0,0,0.08));
 }
 
 .categoryBadge,
@@ -56,13 +62,13 @@
 }
 
 .image {
-  height: 220px;
   width: 100%;
+  height: 100%;
   display: block;
   object-fit: cover;
+  object-position: center center;
   transition: transform 0.35s ease;
-  background: radial-gradient(circle at top, rgba(255, 209, 102, 0.14), transparent 55%),
-    linear-gradient(180deg, rgba(255, 255, 255, 0.08), rgba(0, 0, 0, 0.22));
+  background: linear-gradient(180deg, rgba(255,255,255,0.03), rgba(0,0,0,0.06));
 }
 
 .card:hover .image {
@@ -84,8 +90,9 @@
 
 .heading h3 {
   margin: 0;
-  font-size: 1.08rem;
-  line-height: 1.4;
+  font-size: 1.06rem;
+  line-height: 1.25;
+  color: #fff;
 }
 
 .favorite {
@@ -105,9 +112,14 @@
 
 .body p {
   color: #d2cbc0;
-  line-height: 1.7;
+  line-height: 1.6;
   font-size: 0.95rem;
   margin: 0;
+  /* Clamp description to a maximum of 3 lines for visual balance */
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
 
 .footer {
@@ -124,8 +136,9 @@
 }
 
 .priceBlock span {
-  font-weight: 700;
-  color: #fff4d6;
+  font-weight: 800;
+  color: #fff6d9;
+  font-size: 1.05rem;
 }
 
 .qtyControl {
@@ -134,18 +147,18 @@
   gap: 8px;
   padding: 6px;
   border-radius: 999px;
-  background: rgba(255, 255, 255, 0.06);
+  background: rgba(255, 255, 255, 0.04);
 }
 
 .qtyButton {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 28px;
-  height: 28px;
+  width: 34px;
+  height: 34px;
   border: none;
-  border-radius: 50%;
-  background: rgba(255, 209, 102, 0.16);
+  border-radius: 10px;
+  background: rgba(255, 209, 102, 0.14);
   color: #ffd166;
   cursor: pointer;
 }
@@ -158,20 +171,22 @@
 
 .addButton {
   border: none;
-  border-radius: 999px;
-  padding: 11px 16px;
+  border-radius: 12px;
+  padding: 12px 18px;
   background: linear-gradient(135deg, #ffd166, #ffb347);
   color: #090909;
   cursor: pointer;
-  font-weight: 700;
-  box-shadow: 0 8px 20px rgba(255, 209, 102, 0.14);
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  font-weight: 800;
+  box-shadow: 0 10px 28px rgba(255, 165, 60, 0.14);
+  transition: transform 0.18s ease, box-shadow 0.18s ease;
 }
 
 .addButton:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 12px 24px rgba(255, 209, 102, 0.22);
+  transform: translateY(-3px);
+  box-shadow: 0 18px 40px rgba(255, 165, 60, 0.18);
 }
+
+.addButton:active { transform: translateY(0); }
 
 @keyframes shimmer {
   to {
@@ -179,17 +194,20 @@
   }
 }
 
+@media (max-width: 880px) {
+  .card { min-height: 360px; }
+}
+
 @media (max-width: 640px) {
   .card {
-    grid-template-rows: 180px auto;
-  }
-
-  .image {
-    height: 180px;
+    min-height: 300px;
   }
 
   .priceBlock {
     flex-direction: column;
     align-items: flex-start;
+    gap: 8px;
   }
+
+  .addButton { width: 100%; }
 }

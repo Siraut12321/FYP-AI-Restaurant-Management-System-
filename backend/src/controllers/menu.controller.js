@@ -94,3 +94,13 @@ export const toggleFeatured = async (req, res, next) => {
     next(err);
   }
 };
+
+// ─── Get All Unique Categories ────────────────────────────────────────────────
+export const getCategories = async (req, res, next) => {
+  try {
+    const categories = await menuService.getCategories();
+    sendSuccess(res, 200, 'Categories fetched successfully', categories);
+  } catch (err) {
+    next(err);
+  }
+};

@@ -21,6 +21,10 @@
   text-transform: uppercase;
 }
 
+.brand:hover {
+  text-shadow: 0 6px 20px rgba(255, 209, 102, 0.12);
+}
+
 .menu {
   display: flex;
   gap: 22px;
@@ -31,13 +35,32 @@
 .menu a {
   color: #f7f5f2;
   text-decoration: none;
-  transition: color 0.2s ease, transform 0.2s ease;
-  font-weight: 500;
+  transition: color 0.18s ease, transform 0.18s ease;
+  font-weight: 600;
+  padding: 8px 6px;
+  border-radius: 8px;
+  position: relative;
 }
 
 .menu a:hover {
   color: #ffd166;
-  transform: translateY(-1px);
+  transform: translateY(-2px);
+}
+
+.menu a.active {
+  color: #ffd166;
+}
+
+.menu a.active::after {
+  content: '';
+  position: absolute;
+  left: 8px;
+  right: 8px;
+  bottom: -6px;
+  height: 4px;
+  border-radius: 6px;
+  background: linear-gradient(90deg,#ffd166,#ff8c42);
+  box-shadow: 0 8px 28px rgba(255,145,45,0.16);
 }
 
 .actions {
@@ -45,6 +68,28 @@
   gap: 10px;
   align-items: center;
   flex-wrap: wrap;
+}
+
+.icon {
+  vertical-align: middle;
+  margin-right: 8px;
+  color: inherit;
+}
+
+.iconLink {
+  display: inline-flex;
+  gap: 8px;
+  align-items: center;
+  padding: 8px 12px;
+  border-radius: 12px;
+  color: #f7f5f2;
+  text-decoration: none;
+  background: rgba(255,255,255,0.02);
+  border: 1px solid rgba(255,255,255,0.04);
+}
+
+.iconLink:hover {
+  color: #ffd166;
 }
 
 .button {
@@ -71,9 +116,12 @@
   text-decoration: none;
   padding: 8px 12px;
   border-radius: 999px;
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.06);
   font-weight: 700;
-  background: rgba(255, 255, 255, 0.03);
+  background: linear-gradient(135deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+  display: inline-flex;
+  gap: 8px;
+  align-items: center;
 }
 
 .cartLink:hover {
@@ -83,6 +131,12 @@
 .userName {
   color: #d8ccb8;
   font-size: 0.95rem;
+}
+
+.buttonOutline {
+  display: inline-flex;
+  gap: 8px;
+  align-items: center;
 }
 
 @media (max-width: 900px) {

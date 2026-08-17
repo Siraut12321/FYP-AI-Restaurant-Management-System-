@@ -1,0 +1,42 @@
+/* CategorySelector Module */
+/* Uses inline styles primarily, but included for future enhancements */
+
+.selector-container {
+  position: relative;
+  width: 100%;
+}
+
+.selector-dropdown-menu {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  z-index: 1000;
+  margin-top: 6px;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+}
+
+.selector-list {
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+/* Scrollbar styling for better appearance */
+.selector-list::-webkit-scrollbar {
+  width: 6px;
+}
+
+.selector-list::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.selector-list::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 3px;
+}
+
+.selector-list::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.25);
+}

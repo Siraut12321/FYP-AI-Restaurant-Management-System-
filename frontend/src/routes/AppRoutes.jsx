@@ -8,11 +8,11 @@ import ProtectedRoute from './ProtectedRoute';
 /* ── Customer pages ── */
 const Home           = lazy(() => import('../pages/Home/Home'));
 const Menu           = lazy(() => import('../pages/Menu/Menu'));
-const Deals          = lazy(() => import('../pages/Deals/Deals'));
 const About          = lazy(() => import('../pages/About/About'));
 const Contact        = lazy(() => import('../pages/Contact/Contact'));
 const Login          = lazy(() => import('../pages/Login/Login'));
 const Register       = lazy(() => import('../pages/Register/Register'));
+const ForgotPassword = lazy(() => import('../pages/ForgotPassword/ForgotPassword'));
 const Cart           = lazy(() => import('../pages/Cart/Cart'));
 const Profile        = lazy(() => import('../pages/Profile/Profile'));
 const OrderHistory   = lazy(() => import('../pages/OrderHistory/OrderHistory'));
@@ -38,12 +38,13 @@ function AppRoutes() {
           <Route element={<PageLayout />}>
             <Route path='/'         element={<Home />} />
             <Route path='/menu'     element={<Menu />} />
-            <Route path='/deals'    element={<Deals />} />
+            {/* /deals route removed (dummy placeholder) */}
             <Route path='/about'    element={<About />} />
             <Route path='/contact'  element={<Contact />} />
             <Route path='/cart'     element={<Cart />} />
             <Route path='/login'    element={<Login />} />
             <Route path='/register' element={<Register />} />
+            <Route path='/forgot-password' element={<ForgotPassword />} />
             <Route element={<ProtectedRoute allowedRoles={['customer']} />}>
               <Route path='/profile' element={<Profile />} />
               <Route path='/orders' element={<OrderHistory />} />

@@ -7,7 +7,7 @@ function About() {
         <p>Our Story</p>
         <h1>Modern Urdu Restaurant Hospitality with AI-Ready Magic</h1>
         <p>
-          UrduAI Bistro combines premium restaurant service with elegant technology-ready design, bringing local cuisine and intelligent ordering to a beautiful luxury interface.
+          Hot & Spicy combines premium restaurant service with elegant technology-ready design, bringing local cuisine and intelligent ordering to a beautiful luxury interface.
         </p>
       </section>
       <div className={styles.section}>

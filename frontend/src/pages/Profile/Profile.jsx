@@ -4,6 +4,7 @@ import Button from '../../components/ui/Button';
 import TextInput from '../../components/ui/TextInput';
 import Spinner from '../../components/Loading/Spinner';
 import profileService from '../../services/profileService';
+import styles from '../../styles/ProfilePage.module.css';
 
 const initialForm = { name: '', phone: '', address: '' };
 
@@ -75,7 +76,7 @@ function Profile() {
 
   if (error && !profile) {
     return (
-      <section style={{ maxWidth: 760, margin: '0 auto', padding: '48px 20px' }}>
+      <section className={styles.page}>
         <h1>My Profile</h1>
         <p role='alert'>{error}</p>
         <Link to='/login'>Log in</Link>
@@ -84,48 +85,63 @@ function Profile() {
   }
 
   return (
-    <section style={{ maxWidth: 900, margin: '0 auto', padding: '48px 20px' }}>
-      <header style={{ marginBottom: 28 }}>
+    <section className={styles.page}>
+      <header className={styles.header}>
         <h1>My Profile</h1>
         <p>Manage your contact details and restaurant account information.</p>
       </header>
 
-      <div style={{ display: 'grid', gridTemplateColumns: 'minmax(220px, 0.8fr) minmax(280px, 1.2fr)', gap: 28 }}>
-        <aside>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginBottom: 24 }}>
-            {profile.avatar ? (
-              <img src={profile.avatar} alt={`${profile.name} profile`} width='96' height='96' style={{ borderRadius: '50%', objectFit: 'cover' }} />
-            ) : (
-              <div aria-hidden='true' style={{ width: 96, height: 96, borderRadius: '50%', display: 'grid', placeItems: 'center', fontSize: 32, background: '#eee' }}>
-                {profile.name?.charAt(0)?.toUpperCase() || '?'}
-              </div>
-            )}
+      <div className={styles.grid}>
+        <aside className={styles.card}>
+          <div className={styles.avatarWrap}>
+            <div className={styles.avatar}>
+              {profile.avatar ? (
+                <img src={profile.avatar} alt={`${profile.name} profile`} />
+              ) : (
+                <span aria-hidden>{profile.name?.charAt(0)?.toUpperCase() || '?'}</span>
+              )}
+            </div>
             <div>
-              <h2 style={{ margin: 0 }}>{profile.name}</h2>
-              <p style={{ margin: '6px 0 0' }}>{profile.email}</p>
+              <h2 className={styles.name}>{profile.name}</h2>
+              <p className={styles.email}>{profile.email}</p>
+              <div className={styles.stats}>
+                <div className={styles.stat}><strong>{profile.totalOrders ?? 0}</strong><small>Total orders</small></div>
+                <div className={styles.stat}><strong>{formatDate(profile.createdAt)}</strong><small>Joined</small></div>
+              </div>
             </div>
           </div>
-
-          <dl>
-            <div><dt>Total orders</dt><dd>{profile.totalOrders ?? 0}</dd></div>
-            <div><dt>Joined</dt><dd>{formatDate(profile.createdAt)}</dd></div>
-          </dl>
         </aside>
 
-        <form onSubmit={submit} encType='multipart/form-data'>
-          <TextInput name='name' value={form.name} onChange={updateField} placeholder='Name' ariaLabel='Name' />
-          <TextInput name='phone' value={form.phone} onChange={updateField} placeholder='Phone' ariaLabel='Phone' />
-          <label style={{ display: 'block', margin: '16px 0' }}>
-            Address
-            <textarea name='address' value={form.address} onChange={updateField} rows='4' style={{ display: 'block', width: '100%', marginTop: 8 }} />
-          </label>
-          <label style={{ display: 'block', margin: '16px 0' }}>
-            Profile picture
-            <input type='file' accept='image/jpeg,image/png,image/webp' onChange={(event) => setAvatar(event.target.files?.[0] || null)} />
-          </label>
+        <form onSubmit={submit} className={styles.card} encType='multipart/form-data'>
+          <div className={styles.formRow}>
+            <div className={styles.formField}>
+              <label>Name</label>
+              <TextInput name='name' value={form.name} onChange={updateField} placeholder='Name' ariaLabel='Name' />
+            </div>
+            <div className={styles.formField}>
+              <label>Phone</label>
+              <TextInput name='phone' value={form.phone} onChange={updateField} placeholder='Phone' ariaLabel='Phone' />
+            </div>
+          </div>
+          <div className={styles.formField}>
+            <label>Address</label>
+            <textarea name='address' value={form.address} onChange={updateField} rows='4' className={styles.input} />
+          </div>
+          <div className={styles.formField}>
+            <label>Profile picture</label>
+            <div>
+              <input id='avatarUpload' type='file' accept='image/jpeg,image/png,image/webp' style={{ display: 'none' }} onChange={(event) => setAvatar(event.target.files?.[0] || null)} />
+              <label htmlFor='avatarUpload' className={styles.uploadButton}>
+                {avatar ? avatar.name : 'Choose image'}
+              </label>
+            </div>
+          </div>
           {error && <p role='alert'>{error}</p>}
           {message && <p role='status'>{message}</p>}
-          <Button type='submit' disabled={saving}>{saving ? 'Saving...' : 'Edit Profile'}</Button>
+          <div className={styles.buttonRow}>
+            <Button type='submit' disabled={saving}>{saving ? 'Saving...' : 'Edit Profile'}</Button>
+            <Link to='/orders'><Button type='button' variant='outline' className={styles.viewOrdersBtn}>View Orders</Button></Link>
+          </div>
         </form>
       </div>
     </section>

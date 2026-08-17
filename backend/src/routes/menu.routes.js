@@ -14,13 +14,15 @@ import {
   deleteMenuItem,
   toggleAvailability,
   toggleFeatured,
+  getCategories,
 } from '../controllers/menu.controller.js';
 
 const router = Router();
 
 // ─── Public Routes ────────────────────────────────────────────────────────────
-router.get('/',    getAllMenuItems);
-router.get('/:id', mongoIdValidator, getMenuItemById);
+router.get('/',           getAllMenuItems);
+router.get('/categories', getCategories);
+router.get('/:id',        mongoIdValidator, getMenuItemById);
 
 // ─── Admin Only Routes ────────────────────────────────────────────────────────
 router.use(protect, restrictTo('admin'));

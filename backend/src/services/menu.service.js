@@ -94,3 +94,9 @@ export const toggleFeatured = async (id) => {
   await item.save();
   return item;
 };
+
+// ─── Get All Unique Categories ────────────────────────────────────────────────
+export const getCategories = async () => {
+  const categories = await MenuItem.distinct('category');
+  return categories.sort();
+};

@@ -1,6 +1,6 @@
 .page {
-  padding: 40px 20px 80px;
-  max-width: 1280px;
+  padding: 56px 20px 100px;
+  max-width: 1320px;
   margin: 0 auto;
 }
 
@@ -233,6 +233,16 @@
   white-space: nowrap;
 }
 
+.categoryPill:focus-visible,
+.addButton:focus-visible,
+.favorite:focus-visible,
+.qtyButton:focus-visible,
+.controls input:focus-visible,
+.controls select:focus-visible {
+  outline: 3px solid rgba(255, 209, 102, 0.22);
+  outline-offset: 3px;
+}
+
 .categoryPill:hover {
   transform: translateY(-2px) scale(1.01);
   background: rgba(255, 209, 102, 0.14);
@@ -322,8 +332,9 @@
 
 .cardGrid {
   display: grid;
-  gap: 20px;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 22px;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  align-items: start;
 }
 
 @keyframes float {

@@ -8,6 +8,7 @@ import {
   toggleAvailability,
   toggleFeatured,
 } from '../../services/menuService';
+import CategorySelector from '../../components/CategorySelector';
 import styles from '../../styles/MenuManagement.module.css';
 
 const EMPTY_FORM = {
@@ -251,10 +252,13 @@ function MenuManagement() {
                   <input required value={form.dishName} onChange={(e) => setForm((s) => ({ ...s, dishName: e.target.value }))} />
                 </label>
 
-                <label className={styles.field}>
-                  <span>Category *</span>
-                  <input required value={form.category} onChange={(e) => setForm((s) => ({ ...s, category: e.target.value }))} />
-                </label>
+                <div className={styles.field}>
+                  <CategorySelector
+                    value={form.category}
+                    onChange={(category) => setForm((s) => ({ ...s, category }))}
+                    label="Category"
+                  />
+                </div>
 
                 <label className={styles.field}>
                   <span>Price (₨) *</span>

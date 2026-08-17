@@ -23,6 +23,8 @@ export const getDashboardStats = async () => {
     popularDishes,
     recentOrders,
     salesLast7Days,
+    orderSourceStats,
+    categoryPerformance,
   ] = await Promise.all([
 
     // ── Order status counts + total revenue (delivered only) ──────────────────
@@ -89,7 +91,7 @@ export const getDashboardStats = async () => {
       .sort({ createdAt: -1 })
       .limit(10)
       .populate('customer', 'name')
-      .select('customer totalAmount orderStatus createdAt'),
+      .select('customer totalAmount orderStatus createdAt orderSource'),
 
     // ── Sales last 7 days ─────────────────────────────────────────────────────
     Order.aggregate([
@@ -109,6 +111,47 @@ export const getDashboardStats = async () => {
       { $sort: { _id: 1 } },
       { $project: { _id: 0, date: '$_id', revenue: 1, orders: 1 } },
     ]),
+
+    // ── Website vs Voice orders ───────────────────────────────────────────────
+    Order.aggregate([
+      {
+        $group: {
+          _id:     '$orderSource',
+          count:   { $sum: 1 },
+          revenue: { $sum: { $cond: [{ $eq: ['$orderStatus', 'Delivered'] }, '$totalAmount', 0] } },
+        },
+      },
+    ]),
+
+    // ── Category Performance ──────────────────────────────────────────────────
+    Order.aggregate([
+      { $unwind: '$orderItems' },
+      {
+        $lookup: {
+          from:         'menuitems',
+          localField:   'orderItems.menuItem',
+          foreignField: '_id',
+          as:           'menuItemData',
+        },
+      },
+      { $unwind: { path: '$menuItemData', preserveNullAndEmptyArrays: true } },
+      {
+        $group: {
+          _id:      '$menuItemData.category',
+          orders:   { $sum: '$orderItems.quantity' },
+          revenue:  { $sum: { $cond: [{ $eq: ['$orderStatus', 'Delivered'] }, '$orderItems.subtotal', 0] } },
+        },
+      },
+      { $sort: { revenue: -1 } },
+      {
+        $project: {
+          _id:      0,
+          category: '$_id',
+          orders:   1,
+          revenue:  1,
+        },
+      },
+    ]),
   ]);
 
   // ── Flatten order status counts ───────────────────────────────────────────
@@ -120,6 +163,15 @@ export const getDashboardStats = async () => {
     statusMap[s._id] = s.count;
     totalRevenue    += s.revenue;
     totalOrders     += s.count;
+  }
+
+  // ── Flatten order source stats ────────────────────────────────────────────
+  const sourceMap = { Website: { count: 0, revenue: 0 }, Voice: { count: 0, revenue: 0 } };
+  for (const source of orderSourceStats) {
+    if (source._id && sourceMap[source._id]) {
+      sourceMap[source._id].count = source.count;
+      sourceMap[source._id].revenue = source.revenue;
+    }
   }
 
   return {
@@ -136,12 +188,15 @@ export const getDashboardStats = async () => {
     featuredItems:    menuStats[0]?.featured ?? 0,
     popularDishes,
     recentOrders: recentOrders.map((o) => ({
-      id:          o._id,
+      id:           o._id,
       customerName: o.customer?.name ?? 'Guest',
       total:        o.totalAmount,
       status:       o.orderStatus,
+      source:       o.orderSource ?? 'Website',
       createdAt:    o.createdAt,
     })),
     salesLast7Days,
+    orderSources: sourceMap,
+    categoryPerformance,
   };
 };

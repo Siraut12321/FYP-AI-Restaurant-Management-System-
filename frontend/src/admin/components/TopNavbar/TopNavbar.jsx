@@ -15,13 +15,8 @@ import {
 import { AuthContext } from '../../../context/AuthContext';
 import styles from './TopNavbar.module.css';
 
-/* ── Static mock notifications ── */
-const NOTIFICATIONS = [
-  { id: 1, text: 'New order #ORD-006 received',       time: '2 min ago',  color: 'var(--admin-gold)'    },
-  { id: 2, text: 'Usman Raza left a 5-star review',   time: '18 min ago', color: 'var(--admin-success)' },
-  { id: 3, text: 'Low stock: Mutton Biryani (3 left)', time: '1 hr ago',   color: 'var(--admin-danger)'  },
-  { id: 4, text: 'Reservation confirmed for 7 PM',    time: '2 hr ago',   color: 'var(--admin-info)'    },
-];
+/* ── Notifications: currently empty, will be fetched from API in Phase 7 ── */
+// const NOTIFICATIONS = [];
 
 /* ── Route → readable title map ── */
 const TITLES = {
@@ -57,7 +52,8 @@ function TopNavbar({ onToggleSidebar, collapsed }) {
 
   const [profileOpen, setProfileOpen] = useState(false);
   const [notifOpen,   setNotifOpen]   = useState(false);
-  const [notifs,      setNotifs]      = useState(NOTIFICATIONS);
+  const [notifs,      setNotifs]      = useState([]);
+  // TODO: Fetch real notifications from /api/v1/notifications when endpoint is available
 
   const profileRef = useRef(null);
   const notifRef   = useRef(null);
@@ -187,8 +183,8 @@ function TopNavbar({ onToggleSidebar, collapsed }) {
               >
                 {/* Header */}
                 <div className={styles.dropHeader}>
-                  <div className={styles.dropName}>{user?.name ?? 'Admin User'}</div>
-                  <div className={styles.dropEmail}>{user?.email ?? 'admin@demo.test'}</div>
+                  <div className={styles.dropName}>{user?.name ?? 'Administrator'}</div>
+                  <div className={styles.dropEmail}>{user?.email ?? 'admin@hotandspicy.local'}</div>
                 </div>
 
                 {/* Items */}

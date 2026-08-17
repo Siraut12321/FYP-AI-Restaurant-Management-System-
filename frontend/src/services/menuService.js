@@ -47,3 +47,8 @@ export const toggleFeatured = async (id) => {
 
 // Alias kept for MenuManagement.jsx compatibility
 export const fetchMenuItems = getAllMenuItems;
+
+export const getCategories = async () => {
+  const res = await api.get('/menu/categories');
+  return unwrap(res);
+};

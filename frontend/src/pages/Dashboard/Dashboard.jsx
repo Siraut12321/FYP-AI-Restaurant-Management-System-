@@ -193,7 +193,7 @@ function Dashboard() {
       <div className={styles.pageHeader}>
         <div>
           <div className={styles.greeting}>Good evening, Admin 👋</div>
-          <div className={styles.greetingSub}>Here's what's happening at UrduAI Bistro today.</div>
+          <div className={styles.greetingSub}>Here's what's happening at Hot & Spicy today.</div>
         </div>
         <span className={styles.dateLabel}>{today}</span>
       </div>

@@ -4,7 +4,7 @@ function Settings() {
   return (
     <div className={styles.adminShell}>
       <aside className={styles.sidebar}>
-        <div className={styles.brand}>UrduAI Admin</div>
+        <div className={styles.brand}>Hot & Spicy Admin</div>
         <div className={styles.navList}>
           <a className={styles.navLink} href='/admin/dashboard'>Dashboard</a>
           <a className={styles.navLink} href='/admin/orders'>Orders</a>
