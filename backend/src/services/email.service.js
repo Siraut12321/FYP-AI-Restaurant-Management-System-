@@ -1,26 +1,46 @@
-import { Resend } from 'resend';
+import { createRequire } from 'node:module';
 
-const getResendClient = () => {
-  const apiKey = process.env.RESEND_API_KEY;
-  if (!apiKey) return null;
-  return new Resend(apiKey);
-};
+// EmailJS publishes a broken ESM build for this runtime, but the CJS entry works
+// reliably in this project. Use the CommonJS bridge so the server can boot.
+const require = createRequire(import.meta.url);
+const emailjs = require('@emailjs/nodejs');
 
-export const resend = {
-  emails: {
-    send: async (payload) => {
-      const client = getResendClient();
-      if (!client) {
-        throw new Error('RESEND_API_KEY is not configured.');
-      }
-      return client.emails.send(payload);
+// ─── EmailJS Configuration ────────────────────────────────────────────────────
+const initEmailJS = () => {
+  const publicKey = process.env.EMAILJS_PUBLIC_KEY;
+  const privateKey = process.env.EMAILJS_PRIVATE_KEY;
+
+  console.info('ORDER EMAIL: EmailJS configuration detected', {
+    hasServiceId: Boolean(process.env.EMAILJS_SERVICE_ID),
+    hasPublicKey: Boolean(publicKey),
+    hasPrivateKey: Boolean(privateKey),
+    hasWelcomeTemplateId: Boolean(process.env.EMAILJS_WELCOME_TEMPLATE_ID),
+    hasOrderTemplateId: Boolean(process.env.EMAILJS_ORDER_TEMPLATE_ID),
+  });
+
+  if (!publicKey || !privateKey) {
+    console.warn('EmailJS configuration incomplete: public or private key missing.');
+    return false;
+  }
+
+  emailjs.init({
+    publicKey,
+    privateKey,
+    limitRate: {
+      id: 'app',
+      throttle: 50, // ms
     },
-  },
+  });
+
+  return true;
 };
 
-const hasResendConfig = () => Boolean(
-  process.env.RESEND_API_KEY &&
-  process.env.RESEND_FROM_EMAIL
+const hasEmailJSConfig = () => Boolean(
+  process.env.EMAILJS_SERVICE_ID &&
+  process.env.EMAILJS_PUBLIC_KEY &&
+  process.env.EMAILJS_PRIVATE_KEY &&
+  process.env.EMAILJS_WELCOME_TEMPLATE_ID &&
+  process.env.EMAILJS_ORDER_TEMPLATE_ID
 );
 
 const formatOrderId = (orderId) => {
@@ -34,132 +54,114 @@ export const sendWelcomeEmail = async (user) => {
     return;
   }
 
-  if (!hasResendConfig()) {
-    console.info('Welcome email skipped: Resend is not configured.');
+  if (!hasEmailJSConfig()) {
+    console.info('Welcome email skipped: EmailJS is not configured.');
     return;
   }
 
   const name = user.name || 'Customer';
-  const bodyText = `Welcome to Hot & Spicy Restaurant, ${name}! 🍕\n\nThank you for creating your account with us.\n\nYour account has been successfully created and you're now ready to explore our menu, place orders, and enjoy your favorite meals.\n\nWe’re happy to have you with us!\n\nBest regards,\nHot & Spicy Restaurant`;
 
-  const html = `
-    <div style="font-family:Arial,Helvetica,sans-serif;max-width:600px;margin:0 auto;background:#fffaf0;color:#1a1a1a;padding:24px;border-radius:12px;border:1px solid #f4d19b;">
-      <h2 style="margin:0 0 16px;color:#d97706;">Welcome to Hot & Spicy Restaurant! 🍕</h2>
-      <p style="font-size:16px;line-height:1.6;">Welcome to Hot & Spicy Restaurant, <strong>${name}</strong>! 🍕</p>
-      <p style="font-size:16px;line-height:1.6;">Thank you for creating your account with us.</p>
-      <p style="font-size:16px;line-height:1.6;">Your account has been successfully created and you're now ready to explore our menu, place orders, and enjoy your favorite meals.</p>
-      <p style="font-size:16px;line-height:1.6;">We’re happy to have you with us!</p>
-      <p style="margin-top:24px;font-size:14px;color:#444;">Best regards,<br/>Hot & Spicy Restaurant</p>
-    </div>
-  `;
+  try {
+    if (!initEmailJS()) {
+      console.error('Welcome email skipped: EmailJS initialization failed.');
+      return;
+    }
 
-  const resendClient = getResendClient();
-  if (!resendClient) {
-    console.info('Welcome email skipped: Resend API key is not set.');
-    return;
+    const result = await emailjs.send(
+      process.env.EMAILJS_SERVICE_ID,
+      process.env.EMAILJS_WELCOME_TEMPLATE_ID,
+      {
+        name,
+        email: user.email,
+      }
+    );
+
+    console.log('Welcome email sent successfully to:', user.email);
+  } catch (error) {
+    console.error('Welcome email send failed:', error?.message || 'Unknown error');
   }
-
-  await resend.emails.send({
-    from: process.env.RESEND_FROM_EMAIL,
-    to: user.email,
-    subject: 'Welcome to Hot & Spicy Restaurant! 🍕',
-    text: bodyText,
-    html,
-  });
 };
 
 export const sendOrderConfirmationEmail = async (order) => {
-  if (!order) return;
-
-  if (!hasResendConfig()) {
-    console.info('Order confirmation email skipped: Resend is not configured.');
+  if (!order) {
+    console.warn('Order confirmation email skipped: no order provided.');
     return;
   }
 
+  const configStatus = {
+    hasServiceId: Boolean(process.env.EMAILJS_SERVICE_ID),
+    hasPublicKey: Boolean(process.env.EMAILJS_PUBLIC_KEY),
+    hasPrivateKey: Boolean(process.env.EMAILJS_PRIVATE_KEY),
+    hasOrderTemplateId: Boolean(process.env.EMAILJS_ORDER_TEMPLATE_ID),
+  };
+
+  if (!hasEmailJSConfig()) {
+    console.info('ORDER EMAIL: EmailJS config missing', configStatus);
+    console.info('Order confirmation email skipped: EmailJS is not configured.');
+    return;
+  }
+
+  // Resolve customer email
   const customer = order.customer && typeof order.customer === 'object' ? order.customer : null;
-  const customerEmail = customer?.email || null;
+  const customerEmail = customer?.email || order.shippingAddress?.email || null;
+
+  console.info('ORDER EMAIL: customer email check', {
+    orderId: order._id?.toString?.() || 'unknown',
+    hasCustomer: Boolean(customer),
+    hasCustomerEmail: Boolean(customerEmail),
+    hasShippingEmail: Boolean(order.shippingAddress?.email),
+  });
 
   if (!customerEmail) {
-    console.warn('Order confirmation email skipped: customer email not found for order.', { orderId: order._id?.toString?.() || 'unknown' });
+    console.warn('Order confirmation email skipped: customer email not found for order.', {
+      orderId: order._id?.toString?.() || 'unknown',
+      hasCustomer: Boolean(customer),
+      hasCustomerDetails: Boolean(order.customerDetails),
+    });
     return;
   }
 
-  const customerName = customer?.name || order.customerDetails?.name || order.shippingAddress?.fullName || 'Customer';
-  const orderId = formatOrderId(order._id);
-  const estimatedDelivery = '35–45 minutes';
-  const itemsText = (order.orderItems || []).map((item) => {
-    const itemName = item.dishName || 'Item';
-    const quantity = item.quantity || 0;
-    const subtotal = Number(item.subtotal || 0);
-    const price = Number(item.price || 0);
-    return `• ${itemName} × ${quantity} — PKR ${subtotal} (PKR ${price} each)`;
-  }).join('\n');
+  try {
+    // Initialize EmailJS on each call
+    if (!initEmailJS()) {
+      console.error('Order confirmation email skipped: EmailJS initialization failed.');
+      return;
+    }
 
-  const totalAmount = Number(order.totalAmount || 0);
-  const paymentMethod = order.paymentMethod || 'Not specified';
-  const address = order.shippingAddress?.address || 'Not provided';
-  const city = order.shippingAddress?.city || 'Not provided';
-  const orderStatus = order.orderStatus || 'Pending';
+    // Format order ID for display
+    const orderId = formatOrderId(order._id);
 
-  const textBody = `Hello ${customerName},\n\nThank you for ordering from Hot & Spicy Restaurant! 🍕\n\nYour order has been successfully confirmed.\n\nORDER DETAILS\n────────────────────────\n\nOrder ID: ${orderId}\n\nItems:\n${itemsText}\n\nTotal: PKR ${totalAmount}\n\nPayment: ${paymentMethod}\n\nDelivery Address:\n${address}, ${city}\n\nStatus: ${orderStatus}\n\nEstimated Delivery:\n${estimatedDelivery}\n\nThank you for ordering from Hot & Spicy Restaurant! ❤️\n\nWe hope you enjoy your meal!`;
+    // Prepare template parameters - keep compatible with existing template
+    const templateParams = {
+      order_id: orderId,
+      email: customerEmail,
+    };
 
-  const htmlItems = (order.orderItems || []).map((item) => {
-    const itemName = item.dishName || 'Item';
-    const quantity = item.quantity || 0;
-    const subtotal = Number(item.subtotal || 0);
-    return `
-      <tr>
-        <td style="padding:8px 0; border-bottom:1px solid #f0d7a3; color:#1f2937;">${itemName}</td>
-        <td style="padding:8px 0; border-bottom:1px solid #f0d7a3; color:#1f2937;">${quantity}</td>
-        <td style="padding:8px 0; border-bottom:1px solid #f0d7a3; color:#1f2937;">PKR ${subtotal}</td>
-      </tr>
-    `;
-  }).join('');
+    console.info('ORDER EMAIL: attempting EmailJS send', {
+      orderId: order._id?.toString?.() || 'unknown',
+      hasCustomerEmail: Boolean(customerEmail),
+      templateIdPresent: Boolean(process.env.EMAILJS_ORDER_TEMPLATE_ID),
+      serviceIdPresent: Boolean(process.env.EMAILJS_SERVICE_ID),
+    });
 
-  const html = `
-    <div style="font-family:Arial,Helvetica,sans-serif;max-width:640px;margin:0 auto;background:#fffaf0;color:#111827;padding:24px;border-radius:12px;border:1px solid #f4d19b;">
-      <h2 style="margin:0 0 12px;color:#b45309;">Order Confirmed — Hot & Spicy Restaurant 🍕</h2>
-      <p>Hello <strong>${customerName}</strong>,</p>
-      <p>Thank you for ordering from Hot & Spicy Restaurant! 🍕</p>
-      <p>Your order has been successfully confirmed.</p>
+    const result = await emailjs.send(
+      process.env.EMAILJS_SERVICE_ID,
+      process.env.EMAILJS_ORDER_TEMPLATE_ID,
+      templateParams
+    );
 
-      <h3 style="margin:20px 0 12px;color:#111827;">ORDER DETAILS</h3>
-      <p><strong>Order ID:</strong> ${orderId}</p>
-
-      <table style="width:100%;border-collapse:collapse;margin-top:12px;">
-        <thead>
-          <tr>
-            <th style="text-align:left;padding:8px 0;color:#1f2937;border-bottom:1px solid #f0d7a3;">Item</th>
-            <th style="text-align:left;padding:8px 0;color:#1f2937;border-bottom:1px solid #f0d7a3;">Qty</th>
-            <th style="text-align:left;padding:8px 0;color:#1f2937;border-bottom:1px solid #f0d7a3;">Subtotal</th>
-          </tr>
-        </thead>
-        <tbody>
-          ${htmlItems}
-        </tbody>
-      </table>
-
-      <p style="margin-top:16px;"><strong>Total:</strong> PKR ${totalAmount}</p>
-      <p><strong>Payment:</strong> ${paymentMethod}</p>
-      <p><strong>Delivery Address:</strong> ${address}, ${city}</p>
-      <p><strong>Status:</strong> ${orderStatus}</p>
-      <p><strong>Estimated Delivery:</strong> ${estimatedDelivery}</p>
-      <p style="margin-top:20px;">Thank you for ordering from Hot & Spicy Restaurant! ❤️</p>
-      <p>We hope you enjoy your meal!</p>
-    </div>
-  `;
-
-  const resendClient = getResendClient();
-  if (!resendClient) {
-    console.info('Order confirmation email skipped: Resend API key is not set.');
-    return;
+    console.log('ORDER EMAIL: EmailJS response received', {
+      orderId: order._id?.toString?.() || 'unknown',
+      status: result?.status || 'unknown',
+      id: result?.id || null,
+    });
+    console.log('Order confirmation email sent successfully to:', customerEmail);
+  } catch (error) {
+    // Log error but do NOT throw - order must remain created
+    console.error('ORDER EMAIL: send failed', {
+      orderId: order._id?.toString?.() || 'unknown',
+      message: error?.message || 'Unknown error',
+      response: error?.response || null,
+    });
   }
-
-  await resend.emails.send({
-    from: process.env.RESEND_FROM_EMAIL,
-    to: customerEmail,
-    subject: 'Order Confirmed — Hot & Spicy Restaurant 🍕',
-    text: textBody,
-    html,
-  });
 };

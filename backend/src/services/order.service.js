@@ -48,12 +48,17 @@ export const createOrder = async (customerId, body) => {
   });
 
   // Trigger notifications asynchronously (non-blocking)
-  try {
-    (async () => { await sendOrderNotifications(order._id.toString()); })();
-  } catch (err) {
-    // swallow errors — notifications must not break order creation
-    console.error('Order notification trigger failed:', err);
-  }
+  console.info('ORDER EMAIL: notification started', {
+    orderId: order._id.toString(),
+    orderSource: 'Website',
+  });
+
+  void sendOrderNotifications(order._id.toString()).catch((err) => {
+    console.error('ORDER EMAIL: notification promise rejected', {
+      orderId: order._id.toString(),
+      error: err?.message || String(err),
+    });
+  });
 
   return order;
 };
@@ -159,11 +164,17 @@ export const createVoiceOrder = async (body) => {
     orderSource: 'Voice',
   });
   // Trigger notifications asynchronously (non-blocking)
-  try {
-    (async () => { await sendOrderNotifications(order._id.toString()); })();
-  } catch (err) {
-    console.error('Voice order notification trigger failed:', err);
-  }
+  console.info('ORDER EMAIL: notification started', {
+    orderId: order._id.toString(),
+    orderSource: 'Voice',
+  });
+
+  void sendOrderNotifications(order._id.toString()).catch((err) => {
+    console.error('ORDER EMAIL: notification promise rejected', {
+      orderId: order._id.toString(),
+      error: err?.message || String(err),
+    });
+  });
 
   return order;
 };
@@ -213,11 +224,24 @@ export const backfillVoiceOrderCustomers = async () => {
 // ─── Send Notifications (WhatsApp via Zapier/n8n + optional email) ─────────
 const sendOrderNotifications = async (orderId) => {
   try {
+    console.info('ORDER EMAIL: loading order for notifications', { orderId });
+
     const order = await Order.findById(orderId)
       .populate('orderItems.menuItem', 'dishName image')
       .populate('customer', 'name email');
 
-    if (!order) return;
+    if (!order) {
+      console.warn('ORDER EMAIL: order not found for notifications', { orderId });
+      return;
+    }
+
+    const customerEmail = order.customer?.email || order.shippingAddress?.email || null;
+    console.info('ORDER EMAIL: customer email resolved', {
+      orderId,
+      hasCustomer: Boolean(order.customer),
+      hasCustomerEmail: Boolean(customerEmail),
+      hasShippingEmail: Boolean(order.shippingAddress?.email),
+    });
 
     const webhookUrl = process.env.N8N_ORDER_WEBHOOK;
 
@@ -253,12 +277,20 @@ const sendOrderNotifications = async (orderId) => {
     }
 
     try {
+      console.info('ORDER EMAIL: attempting EmailJS send', { orderId, hasCustomerEmail: Boolean(customerEmail) });
       await sendOrderConfirmationEmail(order);
+      console.info('ORDER EMAIL: email send call completed', { orderId });
     } catch (err) {
-      console.error('Order confirmation email failed:', err);
+      console.error('ORDER EMAIL: sendOrderConfirmationEmail rejected', {
+        orderId,
+        error: err?.message || String(err),
+      });
     }
   } catch (err) {
-    console.error('sendOrderNotifications error:', err);
+    console.error('ORDER EMAIL: sendOrderNotifications error:', {
+      orderId,
+      error: err?.message || String(err),
+    });
   }
 };
 
