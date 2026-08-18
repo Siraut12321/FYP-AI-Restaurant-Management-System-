@@ -91,6 +91,25 @@ const getSafeErrorDetails = (error) => {
   return details;
 };
 
+export const sendPasswordResetEmail = async (user, resetCode) => {
+  if (!user?.email) return;
+  if (!hasEmailJSConfig()) {
+    console.info('Password reset email skipped: EmailJS not configured.');
+    return;
+  }
+  try {
+    if (!initEmailJS()) return;
+    await emailjs.send(
+      process.env.EMAILJS_SERVICE_ID,
+      process.env.EMAILJS_RESET_TEMPLATE_ID || process.env.EMAILJS_WELCOME_TEMPLATE_ID,
+      { name: user.name || 'Customer', email: user.email, reset_code: resetCode }
+    );
+    console.log('Password reset email sent to:', user.email);
+  } catch (error) {
+    console.error('Password reset email failed:', getSafeErrorDetails(error));
+  }
+};
+
 export const sendWelcomeEmail = async (user) => {
   if (!user?.email) {
     console.warn('Welcome email skipped: missing user email.');

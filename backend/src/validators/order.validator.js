@@ -32,7 +32,8 @@ export const createOrderValidator = [
 
   body('shippingAddress.phone')
     .trim()
-    .notEmpty().withMessage('Phone number is required'),
+    .notEmpty().withMessage('Phone number is required')
+    .matches(/^03[0-9]{9}$/).withMessage('Phone must be 11 digits starting with 03 (e.g. 03001234567)'),
 
   body('shippingAddress.address')
     .trim()
@@ -44,8 +45,7 @@ export const createOrderValidator = [
 
   body('paymentMethod')
     .notEmpty().withMessage('Payment method is required')
-    .isIn(['Cash on Delivery', 'Card', 'Online'])
-    .withMessage('Payment method must be Cash on Delivery, Card, or Online'),
+    .equals('Cash on Delivery').withMessage('Payment method must be Cash on Delivery'),
 
   validate,
 ];
@@ -79,7 +79,8 @@ export const createVoiceOrderValidator = [
 
   body('shippingAddress.phone')
     .trim()
-    .notEmpty().withMessage('Phone number is required'),
+    .notEmpty().withMessage('Phone number is required')
+    .matches(/^03[0-9]{9}$/).withMessage('Phone must be 11 digits starting with 03 (e.g. 03001234567)'),
 
   body('shippingAddress.address')
     .trim()
@@ -102,8 +103,7 @@ export const createVoiceOrderValidator = [
 
   body('paymentMethod')
     .notEmpty().withMessage('Payment method is required')
-    .isIn(['Cash on Delivery', 'Card', 'Online'])
-    .withMessage('Payment method must be Cash on Delivery, Card, or Online'),
+    .equals('Cash on Delivery').withMessage('Payment method must be Cash on Delivery'),
 
   body('price').not().exists().withMessage('price is not allowed'),
   body('subtotal').not().exists().withMessage('subtotal is not allowed'),

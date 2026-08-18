@@ -6,6 +6,8 @@ import Spinner from '../../components/Loading/Spinner';
 import profileService from '../../services/profileService';
 import styles from '../../styles/ProfilePage.module.css';
 
+const PHONE_RE = /^03[0-9]{9}$/;
+
 const initialForm = { name: '', phone: '', address: '' };
 
 const formatDate = (value) => {
@@ -21,6 +23,7 @@ function Profile() {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
   const [message, setMessage] = useState('');
+  const [phoneError, setPhoneError] = useState('');
 
   useEffect(() => {
     let active = true;
@@ -49,11 +52,20 @@ function Profile() {
   }, []);
 
   function updateField(event) {
-    setForm((current) => ({ ...current, [event.target.name]: event.target.value }));
+    const { name, value } = event.target;
+    if (name === 'phone') {
+      if (!/^[0-9]*$/.test(value) || value.length > 11) return;
+      setPhoneError('');
+    }
+    setForm((current) => ({ ...current, [name]: value }));
   }
 
   async function submit(event) {
     event.preventDefault();
+    if (form.phone && !PHONE_RE.test(form.phone)) {
+      setPhoneError('Phone must be 11 digits starting with 03 (e.g. 03001234567)');
+      return;
+    }
     setSaving(true);
     setError('');
     setMessage('');
@@ -120,7 +132,8 @@ function Profile() {
             </div>
             <div className={styles.formField}>
               <label>Phone</label>
-              <TextInput name='phone' value={form.phone} onChange={updateField} placeholder='Phone' ariaLabel='Phone' />
+              <TextInput name='phone' value={form.phone} onChange={updateField} placeholder='03XXXXXXXXX' ariaLabel='Phone' inputMode='numeric' />
+              {phoneError && <div style={{ color: '#ff6b6b', fontSize: '0.75rem', marginTop: 4 }}>{phoneError}</div>}
             </div>
           </div>
           <div className={styles.formField}>

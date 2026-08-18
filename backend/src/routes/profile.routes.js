@@ -18,7 +18,7 @@ const profileUpdateValidator = [
   body('phone')
     .optional({ checkFalsy: true })
     .trim()
-    .matches(/^[0-9+\-\s()]{7,20}$/).withMessage('Invalid phone number'),
+    .matches(/^03[0-9]{9}$/).withMessage('Phone must be 11 digits starting with 03 (e.g. 03001234567)'),
   body('address')
     .optional({ checkFalsy: true })
     .trim()

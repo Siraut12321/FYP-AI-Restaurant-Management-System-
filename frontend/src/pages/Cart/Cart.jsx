@@ -4,7 +4,7 @@ import { CartContext } from '../../context/CartContext';
 import { AuthContext } from '../../context/AuthContext';
 import orderService from '../../services/orderService';
 
-const PAYMENT_METHODS = ['Cash on Delivery', 'Card', 'Online'];
+const PHONE_RE = /^03[0-9]{9}$/;
 
 const emptyAddress = { fullName: '', phone: '', address: '', city: '' };
 
@@ -14,13 +14,20 @@ function Cart() {
 
   const [showForm, setShowForm]       = useState(false);
   const [address, setAddress]         = useState(emptyAddress);
-  const [paymentMethod, setPayment]   = useState('Cash on Delivery');
   const [loading, setLoading]         = useState(false);
   const [error, setError]             = useState('');
+  const [phoneError, setPhoneError]   = useState('');
   const [successMsg, setSuccessMsg]   = useState('');
 
-  const handleAddressChange = (e) =>
-    setAddress((prev) => ({ ...prev, [e.target.name]: e.target.value }));
+  const handleAddressChange = (e) => {
+    const { name, value } = e.target;
+    if (name === 'phone') {
+      if (!/^[0-9]*$/.test(value) || value.length > 11) return;
+      setPhoneError('');
+    }
+    if (name === 'city' && !/^[a-zA-Z\s]*$/.test(value)) return;
+    setAddress((prev) => ({ ...prev, [name]: value }));
+  };
 
   const handlePlaceOrder = async () => {
     setError('');
@@ -31,6 +38,10 @@ function Cart() {
       setError('Please fill in all shipping address fields.');
       return;
     }
+    if (!PHONE_RE.test(phone)) {
+      setPhoneError('Phone must be 11 digits starting with 03 (e.g. 03001234567)');
+      return;
+    }
 
     const orderItems = cart.map((it) => ({
       menuItem: it.id,
@@ -39,7 +50,7 @@ function Cart() {
 
     setLoading(true);
     try {
-      await orderService.placeOrder({ orderItems, shippingAddress: address, paymentMethod });
+      await orderService.placeOrder({ orderItems, shippingAddress: address, paymentMethod: 'Cash on Delivery' });
       clearCart();
       setShowForm(false);
       setAddress(emptyAddress);
@@ -114,31 +125,28 @@ function Cart() {
                 <h4>Shipping Address</h4>
 
                 {['fullName', 'phone', 'address', 'city'].map((field) => (
-                  <input
-                    key={field}
-                    name={field}
-                    placeholder={
-                      field === 'fullName' ? 'Full Name'
-                      : field === 'phone'  ? 'Phone Number'
-                      : field === 'address'? 'Street Address'
-                      : 'City'
-                    }
-                    value={address[field]}
-                    onChange={handleAddressChange}
-                    className={styles.input}
-                  />
+                  <div key={field}>
+                    <input
+                      name={field}
+                      placeholder={
+                        field === 'fullName' ? 'Full Name'
+                        : field === 'phone'  ? 'Phone Number (03XXXXXXXXX)'
+                        : field === 'address'? 'Street Address'
+                        : 'City'
+                      }
+                      value={address[field]}
+                      onChange={handleAddressChange}
+                      className={styles.input}
+                      inputMode={field === 'phone' ? 'numeric' : undefined}
+                    />
+                    {field === 'phone' && phoneError && (
+                      <p className={styles.error}>{phoneError}</p>
+                    )}
+                  </div>
                 ))}
 
                 <h4>Payment Method</h4>
-                <select
-                  value={paymentMethod}
-                  onChange={(e) => setPayment(e.target.value)}
-                  className={styles.input}
-                >
-                  {PAYMENT_METHODS.map((m) => (
-                    <option key={m} value={m}>{m}</option>
-                  ))}
-                </select>
+                <p style={{ margin: '4px 0 12px', fontWeight: 600 }}>Cash on Delivery</p>
 
                 {error && <p className={styles.error}>{error}</p>}
 

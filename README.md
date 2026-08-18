@@ -20,6 +20,7 @@
 - [Email Notifications](#-email-notifications)
 - [Scripts](#-scripts)
 - [Default Credentials](#-default-credentials)
+- [Validation Rules](#-validation-rules)
 - [Testing](#-testing)
 - [Future Enhancements](#-future-enhancements)
 - [Contributors](#-contributors)
@@ -56,6 +57,8 @@ The standout feature is the **Urdu AI Voice Assistant** powered by VAPI and n8n,
 - ⭐ Write, edit, and delete reviews for purchased dishes
 - 👤 Manage profile — name, phone, address, and Cloudinary avatar
 - 🔐 JWT-based authentication with secure cookie handling
+- 📱 Gmail-only registration and login with strict email validation
+- 🔒 Password reset flow via 6-digit email code (15-minute expiry)
 
 ### 🛠️ Admin Panel
 - 📊 **Real-time Analytics Dashboard** — revenue, orders, top dishes, category performance, website vs voice breakdown, last 7 days sales
@@ -466,10 +469,12 @@ All endpoints are prefixed with `/api/v1`.
 
 | Method | Endpoint | Auth | Description |
 |---|---|---|---|
-| POST | `/auth/register` | Public | Register a new customer |
-| POST | `/auth/login` | Public | Login and receive JWT |
+| POST | `/auth/register` | Public | Register a new customer (Gmail only) |
+| POST | `/auth/login` | Public | Login and receive JWT (Gmail only) |
 | POST | `/auth/logout` | Public | Clear auth cookie |
 | GET | `/auth/me` | JWT | Get current user info |
+| POST | `/auth/forgot-password` | Public | Send 6-digit reset code to email |
+| POST | `/auth/reset-password` | Public | Reset password using the code |
 
 ### 🍽️ Menu — `/menu`
 
@@ -633,10 +638,7 @@ Content-Type: application/json
     }
   ],
   "paymentMethod": "Cash on Delivery"
-}
-```
-
-> 🔒 The backend is authoritative for pricing. Prices are always fetched from MongoDB — the client cannot override them.
+} Prices are always fetched from MongoDB — the client cannot override them.
 
 ### n8n Order Status Webhook
 
@@ -703,6 +705,32 @@ After running `npm run seed:admin`:
 | Role | `admin` |
 
 > ⚠️ Change the admin password immediately in any production deployment.
+
+---
+
+## ✅ Validation Rules
+
+### Authentication
+| Field | Rule |
+|---|---|
+| Email (register & login) | Must end with `@gmail.com` exactly. Yahoo, Hotmail, Outlook etc. are rejected. |
+| Password (register & login) | Minimum 9 characters, maximum 12 characters. |
+| Confirm Password | Must exactly match the password field. |
+
+### Phone Numbers
+| Field | Rule |
+|---|---|
+| Profile phone | Pakistani mobile format: `03XXXXXXXXX` — exactly 11 digits starting with `03`. |
+| Checkout shipping phone | Same rule: `^03[0-9]{9}$`. |
+| Voice order shipping phone | Same rule enforced at backend validator level. |
+
+### Orders
+| Field | Rule |
+|---|---|
+| Payment Method | Only `Cash on Delivery` is accepted. Card and Online are rejected at both frontend and backend. |
+| City field | Alphabetic characters and spaces only — numbers and special characters are blocked. |
+
+All validation is enforced on **both frontend and backend**. Backend validation uses `express-validator` and cannot be bypassed by direct API calls.
 
 ---
 

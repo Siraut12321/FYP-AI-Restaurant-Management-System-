@@ -1,7 +1,8 @@
 import jwt from 'jsonwebtoken';
+import crypto from 'crypto';
 import User from '../models/User.js';
 import AppError from '../utils/AppError.js';
-import { sendWelcomeEmail } from './email.service.js';
+import { sendWelcomeEmail, sendPasswordResetEmail } from './email.service.js';
 
 // ─── Generate JWT ──────────────────────────────────────────────────────────────
 const generateToken = (userId) =>
@@ -19,7 +20,34 @@ const sanitizeUser = (user) => ({
   createdAt: user.createdAt,
 });
 
-// ─── Register ─────────────────────────────────────────────────────────────────
+// ─── Forgot Password ──────────────────────────────────────────────────────────
+export const forgotPassword = async (email) => {
+  const user = await User.findOne({ email });
+  if (!user) throw new AppError('No account found with that email', 404);
+
+  const resetCode = crypto.randomInt(100000, 999999).toString();
+  user.resetPasswordToken = crypto.createHash('sha256').update(resetCode).digest('hex');
+  user.resetPasswordExpires = new Date(Date.now() + 15 * 60 * 1000); // 15 min
+  await user.save({ validateBeforeSave: false });
+
+  await sendPasswordResetEmail(user, resetCode);
+};
+
+// ─── Reset Password ───────────────────────────────────────────────────────────
+export const resetPassword = async (resetCode, newPassword) => {
+  const hashed = crypto.createHash('sha256').update(resetCode).digest('hex');
+  const user = await User.findOne({
+    resetPasswordToken: hashed,
+    resetPasswordExpires: { $gt: Date.now() },
+  });
+  if (!user) throw new AppError('Reset code is invalid or has expired', 400);
+
+  user.password = newPassword;
+  user.resetPasswordToken = null;
+  user.resetPasswordExpires = null;
+  await user.save();
+};
+
 export const registerUser = async ({ name, email, password, role }) => {
   const existing = await User.findOne({ email });
   if (existing) throw new AppError('Email is already registered', 409);

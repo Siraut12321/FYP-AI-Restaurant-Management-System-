@@ -1,5 +1,5 @@
 import { validationResult } from 'express-validator';
-import { registerUser, loginUser } from '../services/auth.service.js';
+import { registerUser, loginUser, forgotPassword, resetPassword } from '../services/auth.service.js';
 import { sendSuccess } from '../utils/apiResponse.js';
 import AppError from '../utils/AppError.js';
 
@@ -56,4 +56,24 @@ export const logout = (_req, res) => {
 // ─── GET /api/v1/auth/me ──────────────────────────────────────────────────────
 export const getMe = (req, res) => {
   sendSuccess(res, 200, 'User fetched successfully', { user: req.user });
+};
+
+// ─── POST /api/v1/auth/forgot-password ───────────────────────────────────────
+export const forgotPasswordHandler = async (req, res, next) => {
+  try {
+    await forgotPassword(req.body.email);
+    sendSuccess(res, 200, 'Password reset code sent to your email');
+  } catch (err) {
+    next(err);
+  }
+};
+
+// ─── POST /api/v1/auth/reset-password ────────────────────────────────────────
+export const resetPasswordHandler = async (req, res, next) => {
+  try {
+    await resetPassword(req.body.resetCode, req.body.newPassword);
+    sendSuccess(res, 200, 'Password reset successful');
+  } catch (err) {
+    next(err);
+  }
 };

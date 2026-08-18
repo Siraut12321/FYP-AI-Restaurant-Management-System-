@@ -15,7 +15,6 @@ function Navbar() {
         <NavLink to='/' className={({isActive}) => isActive ? styles.active : ''}>Home</NavLink>
         <NavLink to='/menu' className={({isActive}) => isActive ? styles.active : ''}>Menu</NavLink>
         <NavLink to='/about' className={({isActive}) => isActive ? styles.active : ''}>About</NavLink>
-        <NavLink to='/contact' className={({isActive}) => isActive ? styles.active : ''}>Contact</NavLink>
       </nav>
       <div className={styles.actions}>
         <Link to='/cart' className={styles.cartLink} aria-label="View cart">

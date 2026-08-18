@@ -16,14 +16,14 @@ const userSchema = new mongoose.Schema(
       unique: true,
       lowercase: true,
       trim: true,
-      match: [/^\S+@\S+\.\S+$/, 'Please provide a valid email'],
+      match: [/^[a-zA-Z0-9._%+-]+@gmail\.com$/, 'Please enter a valid Gmail address ending with @gmail.com.'],
     },
 
     password: {
       type: String,
       required: [true, 'Password is required'],
-      minlength: [8, 'Password must be at least 8 characters'],
-      select: false, // never returned in queries by default
+      minlength: [9, 'Password must be at least 9 characters'],
+      select: false,
     },
 
     role: {
@@ -46,6 +46,16 @@ const userSchema = new mongoose.Schema(
     address: {
       type: String,
       trim: true,
+      default: null,
+    },
+
+    resetPasswordToken: {
+      type: String,
+      default: null,
+    },
+
+    resetPasswordExpires: {
+      type: Date,
       default: null,
     },
   },
