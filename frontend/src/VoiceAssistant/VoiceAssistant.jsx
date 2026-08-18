@@ -1,6 +1,6 @@
 import { useContext, useEffect, useRef, useState } from 'react';
 import { motion } from 'framer-motion';
-import { sendMessageToAI } from '../services/aiService';
+import { sendMessageToAI, loadPersistedMessages, persistMessages, clearPersistedConversation } from '../services/aiService';
 import profileService from '../services/profileService';
 import { getStoredVoicePreference, setStoredVoicePreference, speechService } from '../services/speechService';
 import { AuthContext } from '../context/AuthContext';
@@ -54,9 +54,9 @@ function VoiceAssistant() {
   const [inputValue, setInputValue] = useState('');
   const [selectedLanguage, setSelectedLanguage] = useState('auto');
   const [messages, setMessages] = useState(() => {
-    // Start with an empty conversation. A single personalized welcome
-    // will be inserted once by the welcome effect (session-backed).
-    return [];
+    // Restore persisted conversation so it survives login/redirect/remount.
+    const persisted = loadPersistedMessages();
+    return persisted.length > 0 ? persisted : [];
   });
   const [isLoading, setIsLoading] = useState(false);
   const [voiceEnabled, setVoiceEnabled] = useState(() => getStoredVoicePreference());
@@ -553,6 +553,29 @@ function VoiceAssistant() {
       speechService.stop();
     };
   }, []);
+
+  // Persist messages to localStorage whenever they change.
+  useEffect(() => {
+    persistMessages(messages);
+  }, [messages]);
+
+  // Clear persisted conversation on logout (user becomes null after being set).
+  const prevUserIdRef = useRef(user?._id || null);
+  useEffect(() => {
+    const prevId = prevUserIdRef.current;
+    const currId = user?._id || null;
+    // If a user was logged in and is now null → logout → clear conversation.
+    if (prevId !== null && currId === null) {
+      clearPersistedConversation();
+      setMessages([]);
+    }
+    // If a different user logs in → clear previous user's conversation.
+    if (prevId !== null && currId !== null && prevId !== currId) {
+      clearPersistedConversation();
+      setMessages([]);
+    }
+    prevUserIdRef.current = currId;
+  }, [user]);
 
   useEffect(() => { userRef.current = user; }, [user]);
   useEffect(() => { authLoadingRef.current = authLoading; }, [authLoading]);

@@ -2,6 +2,7 @@ import axios from 'axios';
 
 const AI_WEBHOOK_URL = 'https://siraut.app.n8n.cloud/webhook/restaurant-ai';
 const SESSION_KEY = 'restaurant_ai_session_id';
+const MESSAGES_KEY = 'restaurant_ai_messages';
 
 const getOrCreateSessionId = () => {
   if (typeof window === 'undefined') return null;
@@ -11,6 +12,35 @@ const getOrCreateSessionId = () => {
     window.localStorage.setItem(SESSION_KEY, sessionId);
   }
   return sessionId;
+};
+
+export const loadPersistedMessages = () => {
+  try {
+    const raw = window.localStorage.getItem(MESSAGES_KEY);
+    if (!raw) return [];
+    const parsed = JSON.parse(raw);
+    return Array.isArray(parsed) ? parsed : [];
+  } catch {
+    return [];
+  }
+};
+
+export const persistMessages = (messages) => {
+  try {
+    window.localStorage.setItem(MESSAGES_KEY, JSON.stringify(messages));
+  } catch {
+    // ignore storage errors
+  }
+};
+
+export const clearPersistedConversation = () => {
+  try {
+    window.localStorage.removeItem(MESSAGES_KEY);
+    window.localStorage.removeItem(SESSION_KEY);
+    window.sessionStorage.removeItem('va_welcome_played');
+  } catch {
+    // ignore
+  }
 };
 
 export const sendMessageToAI = async (message, language = 'en', metadata = {}) => {
