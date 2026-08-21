@@ -1,4 +1,5 @@
-import { useContext, useEffect, useState } from 'react';
+import { useContext, useEffect, useRef, useState } from 'react';
+import { useLocation } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { FaHeart, FaRegHeart, FaStar } from 'react-icons/fa';
 import styles from '../../styles/MenuCard.module.css';
@@ -13,10 +14,18 @@ function MenuCard({ item }) {
   const [favoriteLoading, setFavoriteLoading] = useState(false);
   const [qty, setQty] = useState(1);
   const [imageLoaded, setImageLoaded] = useState(false);
+  const detailsRef = useRef(null);
+  const location = useLocation();
   const { addItem } = useContext(CartContext);
   const { user } = useContext(AuthContext);
-  const safeRating = typeof item.rating === 'number' ? item.rating : 4.7;
   const safePrice = item.price || (typeof item.priceValue === 'number' ? `PKR ${item.priceValue}` : 'Price available');
+
+  useEffect(() => {
+    if (location.hash === `#review-${item.id}` && detailsRef.current) {
+      detailsRef.current.open = true;
+      detailsRef.current.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+  }, [item.id, location.hash]);
 
   useEffect(() => {
     if (!user || !item.id) return undefined;
@@ -64,9 +73,11 @@ function MenuCard({ item }) {
     >
       <div className={styles.imageWrap}>
         <div className={styles.categoryBadge}>{item.category}</div>
-        <div className={styles.ratingBadge}>
-          <FaStar /> {safeRating.toFixed(1)}
-        </div>
+        {typeof item.rating === 'number' && (
+          <div className={styles.ratingBadge}>
+            <FaStar /> {item.rating.toFixed(1)}
+          </div>
+        )}
         {!imageLoaded && <div className={styles.imageSkeleton} />}
         {item.image ? (
           <img
@@ -90,7 +101,7 @@ function MenuCard({ item }) {
         </div>
         <p>{item.description}</p>
         {favoriteError && <p role='alert'>{favoriteError}</p>}
-        <details>
+        <details ref={detailsRef} id={`review-${item.id}`}>
           <summary>Reviews</summary>
           <ReviewSection menuItemId={item.id} />
         </details>

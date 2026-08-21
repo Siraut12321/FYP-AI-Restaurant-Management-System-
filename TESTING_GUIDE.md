@@ -84,27 +84,42 @@ Also verify:
 
 ## 6. Review Tests
 
-A customer must have an order containing the menu item before creating a review.
+Only authenticated customers can create reviews. The rating is mandatory; review text is optional.
 
 | Method | Endpoint | Expected result |
 | --- | --- | --- |
 | GET | `/reviews/:menuItemId` | `200`, reviews, average rating, count, pagination |
-| POST | `/reviews` | `201` for a purchased item |
+| POST | `/reviews` | `201` for a valid menu item and rating |
 | PATCH | `/reviews/:id` | `200` for the review owner |
 | DELETE | `/reviews/:id` | `200` for the review owner |
 
 Verify the following cases:
 
-- A customer who has not purchased the dish receives `403`.
+- An unauthenticated create request receives `401`.
 - A second review for the same customer/menu item receives `409`.
 - Ratings below 1 or above 5 receive `422`.
-- Empty comments receive `422`.
+- Missing ratings receive `422`.
+- Rating-only reviews are accepted; empty review text is allowed.
+- Invalid or non-existent menu item IDs are rejected.
 - A customer cannot edit or delete another customer's review.
 - Review listing returns the customer name/avatar and average rating.
 - MenuCard displays the review summary and expandable customer reviews.
 - Add, edit, and delete actions show success or error feedback.
 
-## 7. Frontend Route Tests
+## 7. Checkout and Email Tests
+
+Website checkout supports guests and authenticated customers. Every website order requires full name, Gmail-compatible email, Pakistani phone number, street address, city, cart items, and `Cash on Delivery`.
+
+- Guest checkout stores the confirmation email in `shippingAddress.email`.
+- Authenticated checkout pre-fills the account email when available.
+- Missing or malformed email blocks order creation.
+- Missing required checkout fields or invalid phone blocks order creation.
+- Card and online payment values are rejected by the backend.
+- Order confirmation notification runs only after order creation succeeds.
+- A failed order creation does not trigger or claim an email confirmation.
+- Voice orders continue using the API-key route and existing payload contract.
+
+## 8. Frontend Route Tests
 
 As an authenticated customer, verify these routes load and call the backend:
 
@@ -115,7 +130,7 @@ As an authenticated customer, verify these routes load and call the backend:
 
 Verify unauthenticated users are redirected to `/login`, and verify loading, empty, unauthorized, and network-error states are readable on each page.
 
-## 8. Build and Syntax Checks
+## 9. Build and Syntax Checks
 
 Run the frontend production build:
 
@@ -139,13 +154,15 @@ node --check src/app.js
 
 The frontend build should complete successfully. The backend package currently has no ESLint dependency, so `npm run lint` requires ESLint to be installed and configured before it can be used.
 
-## 9. Regression Checklist
+## 10. Regression Checklist
 
 - Existing authentication still works.
 - Existing menu CRUD still works.
 - Existing admin order status updates still work.
 - Existing analytics pages still load.
 - Cart and checkout still place orders.
+- Guest checkout stores a confirmation email without requiring account creation.
+- Website orders remain fixed to Cash on Delivery.
 - Customer data is scoped by authenticated user ID.
 - Passwords are never included in profile responses.
 - No customer feature depends on mock customer localStorage data.

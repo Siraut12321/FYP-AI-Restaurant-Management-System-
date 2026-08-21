@@ -4,7 +4,7 @@ import { sendSuccess, sendError } from '../utils/apiResponse.js';
 // ─── Place Order (Customer) ───────────────────────────────────────────────────
 export const createOrder = async (req, res, next) => {
   try {
-    const order = await orderService.createOrder(req.user._id, req.body);
+    const order = await orderService.createOrder(req.user?._id || null, req.body);
     sendSuccess(res, 201, 'Order placed successfully', order);
   } catch (err) {
     next(err);

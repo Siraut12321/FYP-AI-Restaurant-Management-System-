@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { protect, requireVoiceApiKey, restrictTo } from '../middleware/auth.middleware.js';
+import { protect, optionalProtect, requireVoiceApiKey, restrictTo } from '../middleware/auth.middleware.js';
 import {
   createOrderValidator,
   createVoiceOrderValidator,
@@ -23,11 +23,11 @@ const router = Router();
 router.post('/voice', requireVoiceApiKey, createVoiceOrderValidator, createVoiceOrder);
 
 // ─── All remaining order routes require authentication ───────────────────────
-router.use(protect);
-
 // ─── Customer Routes ──────────────────────────────────────────────────────────
-router.post('/',           createOrderValidator, createOrder);
-router.get('/my-orders',   getMyOrders);
+router.post('/',           optionalProtect, createOrderValidator, createOrder);
+router.get('/my-orders',   protect, getMyOrders);
+
+router.use(protect);
 
 // ─── Admin Only Routes ────────────────────────────────────────────────────────
 router.get('/',            restrictTo('admin'), getAllOrders);

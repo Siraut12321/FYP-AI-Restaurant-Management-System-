@@ -1,11 +1,15 @@
 import { useContext, useEffect, useState } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { AuthContext } from '../../context/AuthContext';
 import reviewService from '../../services/reviewService';
+import { clearReviewDraft, loadReviewDraft, saveReviewDraft } from '../../services/reviewDraft';
 
-const emptyForm = { rating: 5, comment: '' };
+const emptyForm = { rating: null, comment: '' };
 
 function ReviewSection({ menuItemId }) {
   const { user } = useContext(AuthContext);
+  const navigate = useNavigate();
+  const location = useLocation();
   const [result, setResult] = useState({ reviews: [], summary: { averageRating: 0, totalReviews: 0 } });
   const [form, setForm] = useState(emptyForm);
   const [editingId, setEditingId] = useState('');
@@ -15,6 +19,11 @@ function ReviewSection({ menuItemId }) {
   const [message, setMessage] = useState('');
 
   useEffect(() => {
+    const draft = loadReviewDraft();
+    if (draft?.scope === 'menu' && draft.menuItemId === menuItemId) {
+      setForm({ rating: draft.rating || null, comment: draft.comment || '' });
+    }
+
     let active = true;
 
     reviewService.getReviews(menuItemId)
@@ -49,6 +58,20 @@ function ReviewSection({ menuItemId }) {
     setError('');
     setMessage('');
 
+    if (!form.rating) {
+      setError('Please select a star rating before submitting your review.');
+      setSaving(false);
+      return;
+    }
+
+    if (!user) {
+      saveReviewDraft({ scope: 'menu', menuItemId, rating: form.rating, comment: form.comment });
+      setSaving(false);
+      setError('Please log in to submit a review.');
+      navigate('/login', { state: { returnTo: `${location.pathname}#review-${menuItemId}` } });
+      return;
+    }
+
     try {
       if (editingId) {
         const updated = await reviewService.updateReview(editingId, form);
@@ -58,16 +81,11 @@ function ReviewSection({ menuItemId }) {
         }));
         setMessage('Review updated successfully.');
       } else {
-        const created = await reviewService.addReview({ menuItem: menuItemId, ...form });
-        setResult((current) => ({
-          ...current,
-          reviews: [{ ...created, customer: user }, ...current.reviews],
-          summary: {
-            ...current.summary,
-            totalReviews: current.summary.totalReviews + 1,
-          },
-        }));
+        await reviewService.addReview({ menuItem: menuItemId, ...form });
+        const refreshed = await reviewService.getReviews(menuItemId);
+        setResult(refreshed);
         setMessage('Review added successfully.');
+        clearReviewDraft();
       }
       resetForm();
     } catch (err) {
@@ -106,25 +124,28 @@ function ReviewSection({ menuItemId }) {
       {error && <p role='alert'>{error}</p>}
       {message && <p role='status'>{message}</p>}
 
-      {user && (
-        <form onSubmit={submit}>
+      <form onSubmit={submit}>
+        {!user && <p>Please log in to submit a review.</p>}
           <label>
             Rating
-            <select value={form.rating} onChange={(event) => setForm((current) => ({ ...current, rating: Number(event.target.value) }))}>
-              {[5, 4, 3, 2, 1].map((rating) => <option key={rating} value={rating}>{rating} stars</option>)}
-            </select>
+            <div role='radiogroup' aria-label='Review rating'>
+              {[1, 2, 3, 4, 5].map((rating) => (
+                <button key={rating} type='button' aria-label={`${rating} star${rating === 1 ? '' : 's'}`} aria-pressed={form.rating === rating} onClick={() => setForm((current) => ({ ...current, rating }))}>
+                  {rating <= (form.rating || 0) ? '★' : '☆'}
+                </button>
+              ))}
+            </div>
           </label>
           <label>
             Comment
-            <textarea value={form.comment} onChange={(event) => setForm((current) => ({ ...current, comment: event.target.value }))} maxLength={1000} required rows={3} />
+            <textarea value={form.comment} onChange={(event) => setForm((current) => ({ ...current, comment: event.target.value }))} maxLength={1000} rows={3} />
           </label>
           <button type='submit' disabled={saving}>{saving ? 'Saving...' : editingId ? 'Update Review' : 'Write Review'}</button>
           {editingId && <button type='button' onClick={resetForm}>Cancel</button>}
-        </form>
-      )}
+      </form>
 
       {result.reviews.length === 0 ? (
-        <p>No reviews yet.</p>
+        <p>No reviews yet. Be the first to review this dish.</p>
       ) : (
         <div>
           {result.reviews.map((review) => {

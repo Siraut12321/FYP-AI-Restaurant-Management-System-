@@ -1,6 +1,19 @@
 import { useContext, useEffect, useRef, useState } from 'react';
 import { motion } from 'framer-motion';
-import { sendMessageToAI, loadPersistedMessages, persistMessages, clearPersistedConversation } from '../services/aiService';
+import {
+  sendMessageToAI,
+  persistMessages,
+  createGuestConversation,
+  persistGuestConversation,
+  loadConversationIndex,
+  loadConvMessages,
+  setActiveConvId,
+  updateGuestConvTitle,
+  deleteGuestConversation,
+  generateSessionId,
+} from '../services/aiService';
+import conversationService from '../services/conversationService';
+import ChatSidebar from '../components/ChatSidebar/ChatSidebar';
 import profileService from '../services/profileService';
 import { getStoredVoicePreference, setStoredVoicePreference, speechService } from '../services/speechService';
 import { AuthContext } from '../context/AuthContext';
@@ -53,11 +66,11 @@ function VoiceAssistant() {
   const [assistantState, setAssistantState] = useState('idle');
   const [inputValue, setInputValue] = useState('');
   const [selectedLanguage, setSelectedLanguage] = useState('auto');
-  const [messages, setMessages] = useState(() => {
-    // Restore persisted conversation so it survives login/redirect/remount.
-    const persisted = loadPersistedMessages();
-    return persisted.length > 0 ? persisted : [];
-  });
+  const [messages, setMessages] = useState([]);
+  const [conversations, setConversations] = useState([]);
+  const [activeConvId, setActiveConvIdState] = useState(null);
+  const activeConversationRef = useRef(null);
+  const conversationBootstrappedRef = useRef(false);
   const [isLoading, setIsLoading] = useState(false);
   const [voiceEnabled, setVoiceEnabled] = useState(() => getStoredVoicePreference());
   const [isSpeaking, setIsSpeaking] = useState(false);
@@ -89,6 +102,123 @@ function VoiceAssistant() {
   const isSpeakingRef = useRef(false);
   const welcomePlayedRef = useRef(false);
   const lastWelcomeUserIdRef = useRef(null);
+
+  const refreshConversationList = async (authenticated) => {
+    if (authenticated) {
+      try {
+        setConversations(await conversationService.list());
+      } catch {
+        setConversations([]);
+      }
+      return;
+    }
+    setConversations(loadConversationIndex());
+  };
+
+  const setActiveConversation = (conversation, nextMessages = []) => {
+    activeConversationRef.current = conversation;
+    setActiveConvIdState(conversation.id || conversation._id);
+    setMessages(nextMessages);
+    if (conversation.id) setActiveConvId(conversation.id);
+    else setActiveConvId(null);
+  };
+
+  const startNewConversation = async (authenticated) => {
+    const sessionId = generateSessionId();
+    if (authenticated) {
+      setActiveConversation({ sessionId, title: 'New Conversation' }, []);
+      await refreshConversationList(true);
+      return;
+    }
+
+    const conversation = createGuestConversation();
+    setActiveConversation(conversation, []);
+    await refreshConversationList(false);
+  };
+
+  const ensureConversationPersisted = async () => {
+    const conversation = activeConversationRef.current;
+    if (!conversation) return null;
+
+    if (conversation.id) {
+      persistGuestConversation(conversation);
+      return conversation;
+    }
+
+    if (!conversation._id) {
+      try {
+        const created = await conversationService.create(conversation.sessionId);
+        activeConversationRef.current = created;
+        setActiveConvIdState(created._id);
+        return created;
+      } catch {
+        return conversation;
+      }
+    }
+
+    return conversation;
+  };
+
+  const selectConversation = async (id) => {
+    if (user) {
+      try {
+        const conversation = await conversationService.get(id);
+        if (conversation) setActiveConversation(conversation, conversation.messages || []);
+      } catch {
+        setSpeechNotice('Unable to load that conversation right now.');
+      }
+      return;
+    }
+
+    const entry = loadConversationIndex().find((conversation) => conversation.id === id);
+    if (entry) setActiveConversation(entry, loadConvMessages(id));
+  };
+
+  const handleNewChat = () => {
+    speechService.stop();
+    setIsSpeaking(false);
+    isSpeakingRef.current = false;
+    stopRecognition({ keepState: true });
+    startNewConversation(!!user);
+  };
+
+  const handleDeleteConversation = async (id) => {
+    try {
+      if (user) await conversationService.delete(id);
+      else deleteGuestConversation(id);
+      if (id === activeConvId) await startNewConversation(!!user);
+      else await refreshConversationList(!!user);
+    } catch {
+      setSpeechNotice('Unable to delete that conversation right now.');
+    }
+  };
+
+  useEffect(() => {
+    if (authLoading || conversationBootstrappedRef.current) return;
+    conversationBootstrappedRef.current = true;
+    startNewConversation(!!user);
+  }, [authLoading, user]);
+
+  const previousConversationUserRef = useRef(user?._id || null);
+  useEffect(() => {
+    const previousUserId = previousConversationUserRef.current;
+    const currentUserId = user?._id || null;
+    if (!authLoading && previousUserId === null && currentUserId !== null && activeConversationRef.current?.id && messages.some((message) => message.role === 'user')) {
+      const guestConversation = activeConversationRef.current;
+      conversationService.create(guestConversation.sessionId, guestConversation.title)
+        .then((conversation) => conversationService.update(conversation._id, { messages }))
+        .then((conversation) => {
+          startNewConversation(true);
+          refreshConversationList(true);
+        })
+        .catch(() => refreshConversationList(true));
+    }
+    if (!authLoading && previousUserId !== null && currentUserId === null) {
+      startNewConversation(false);
+      refreshConversationList(false);
+    }
+    previousConversationUserRef.current = currentUserId;
+  }, [authLoading, user, messages]);
 
   const isListening = assistantState === 'listening';
   const isThinking = assistantState === 'processing';
@@ -266,6 +396,7 @@ function VoiceAssistant() {
     setSpeechNotice('');
 
     try {
+      await ensureConversationPersisted();
       if (userRef.current && authLoadingRef.current) {
         let waited = 0;
         while (authLoadingRef.current && waited < 1500) {
@@ -319,6 +450,7 @@ function VoiceAssistant() {
         phone,
         address,
         city: null,
+        sessionId: activeConversationRef.current?.sessionId,
       });
 
       const assistantReply = result?.reply || result?.message || result?.answer || 'Sorry, I could not process your request right now.';
@@ -410,6 +542,7 @@ function VoiceAssistant() {
     processingRef.current = true;
 
     try {
+      await ensureConversationPersisted();
       if (userRef.current && authLoadingRef.current) {
         let waited = 0;
         while (authLoadingRef.current && waited < 1500) {
@@ -454,6 +587,7 @@ function VoiceAssistant() {
         userName: userRef.current?.name || null,
         phone,
         address,
+        sessionId: activeConversationRef.current?.sessionId,
       });
 
       const assistantReply = result?.reply || result?.message || result?.answer || 'Sorry, I could not process your request right now.';
@@ -554,26 +688,32 @@ function VoiceAssistant() {
     };
   }, []);
 
-  // Persist messages to localStorage whenever they change.
+  // Persist guest chats locally and authenticated chats in MongoDB.
   useEffect(() => {
-    persistMessages(messages);
-  }, [messages]);
+    const conversation = activeConversationRef.current;
+    if (!conversation || !activeConvId) return;
+    if (!messages.some((message) => message.role === 'user')) return;
 
-  // Clear persisted conversation on logout (user becomes null after being set).
+    if (conversation.id) {
+      persistGuestConversation(conversation);
+      persistMessages(messages, conversation.id);
+      const firstUserMessage = messages.find((message) => message.role === 'user');
+      if (firstUserMessage) updateGuestConvTitle(conversation.id, firstUserMessage.content);
+      refreshConversationList(false);
+      return;
+    }
+
+    conversationService.update(conversation._id, { messages }).then((updated) => {
+      if (updated) activeConversationRef.current = updated;
+      refreshConversationList(true);
+    }).catch(() => {});
+  }, [messages, activeConvId]);
+
+  // Keep guest history available so a login transition does not erase the active chat.
   const prevUserIdRef = useRef(user?._id || null);
   useEffect(() => {
     const prevId = prevUserIdRef.current;
     const currId = user?._id || null;
-    // If a user was logged in and is now null → logout → clear conversation.
-    if (prevId !== null && currId === null) {
-      clearPersistedConversation();
-      setMessages([]);
-    }
-    // If a different user logs in → clear previous user's conversation.
-    if (prevId !== null && currId !== null && prevId !== currId) {
-      clearPersistedConversation();
-      setMessages([]);
-    }
     prevUserIdRef.current = currId;
   }, [user]);
 
@@ -993,7 +1133,17 @@ function VoiceAssistant() {
 
   return (
     <section id="voice-assistant" className={styles.assistantSection}>
-      <div className={styles.assistantCard}>
+      <div className={styles.assistantLayout}>
+        <ChatSidebar
+          conversations={conversations}
+          activeConvId={activeConvId}
+          loading={authLoading}
+          error={false}
+          onNewChat={handleNewChat}
+          onSelectConv={selectConversation}
+          onDeleteConv={handleDeleteConversation}
+        />
+        <div className={styles.assistantCard}>
         <div className={styles.header}>
           <motion.div
             className={styles.orb}
@@ -1174,6 +1324,7 @@ function VoiceAssistant() {
               transition={{ duration: 0.9, repeat: Infinity, repeatType: 'loop', delay: i * 0.06, ease: 'easeInOut' }}
             />
           ))}
+        </div>
         </div>
       </div>
     </section>

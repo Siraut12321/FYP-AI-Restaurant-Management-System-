@@ -55,7 +55,7 @@ const normalise = (item) => ({
   category:    item.category,
   price:       `PKR ${item.discountPrice || item.price}`,
   priceValue:  Number(item.discountPrice || item.price),
-  rating:      item.rating ?? 4.7,
+  rating:      typeof item.rating === 'number' ? item.rating : null,
   image:       item.image,
   isAvailable: item.isAvailable,
 });
@@ -125,7 +125,7 @@ function Menu() {
       if (sort === 'price-low')  return a.priceValue - b.priceValue;
       if (sort === 'price-high') return b.priceValue - a.priceValue;
       if (sort === 'newest')     return b.id.localeCompare(a.id);
-      return b.rating - a.rating;
+      return (b.rating ?? 0) - (a.rating ?? 0);
     });
 
     // Group by category preserving sort order while normalising case-insensitive duplicates

@@ -1,12 +1,23 @@
+import { useEffect, useState } from 'react';
 import styles from '../../styles/FeaturedDishes.module.css';
-
-const dishes = [
-  { title: 'Lahori Karahi', description: 'Rich spiced tomato karahi with fresh naan.', price: '₨1,750', rating: 4.9 },
-  { title: 'Mutton Biryani', description: 'Slow-cooked biryani layered with saffron rice.', price: '₨1,890', rating: 4.8 },
-  { title: 'Golden Seekh Kebab', description: 'Charred beef skewers with saffron glaze.', price: '₨1,250', rating: 4.7 },
-];
+import { getAllMenuItems } from '../../services/menuService';
 
 function FeaturedDishes() {
+  const [dishes, setDishes] = useState([]);
+
+  useEffect(() => {
+    let active = true;
+    getAllMenuItems()
+      .then((response) => {
+        const items = response.data || [];
+        if (active) setDishes(items.filter((item) => item.isFeatured && item.isAvailable !== false).slice(0, 3));
+      })
+      .catch(() => { if (active) setDishes([]); });
+    return () => { active = false; };
+  }, []);
+
+  if (dishes.length === 0) return null;
+
   return (
     <section className={styles.section}>
       <div className={styles.header}>
@@ -15,13 +26,16 @@ function FeaturedDishes() {
       </div>
       <div className={styles.grid}>
         {dishes.map((dish) => (
-          <div key={dish.title} className={styles.card}>
+          <div key={dish._id} className={styles.card}>
+              {dish.image
+                ? <img src={dish.image} alt={dish.dishName} className={styles.image} />
+                : <div className={styles.imageFallback} aria-hidden="true" />}
             <div className={styles.badge}>Chef&apos;s Pick</div>
-            <h3>{dish.title}</h3>
+            <h3>{dish.dishName}</h3>
             <p>{dish.description}</p>
             <div className={styles.meta}>
-              <span>{dish.price}</span>
-              <span>⭐ {dish.rating}</span>
+              <span>PKR {dish.discountPrice || dish.price}</span>
+              <span>{dish.category}</span>
             </div>
           </div>
         ))}

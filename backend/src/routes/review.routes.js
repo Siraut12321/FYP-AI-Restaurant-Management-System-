@@ -48,8 +48,7 @@ const createReviewValidator = [
     .withMessage('Rating must be an integer from 1 to 5'),
   body('comment')
     .trim()
-    .notEmpty()
-    .withMessage('Comment is required')
+    .optional({ checkFalsy: true })
     .isLength({ max: 1000 })
     .withMessage('Comment cannot exceed 1000 characters'),
   validate,

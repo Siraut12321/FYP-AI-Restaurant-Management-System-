@@ -30,6 +30,12 @@ export const createOrderValidator = [
     .trim()
     .notEmpty().withMessage('Full name is required'),
 
+  body('shippingAddress.email')
+    .trim()
+    .notEmpty().withMessage('Email is required')
+    .matches(/^(?:[a-zA-Z0-9._%+-]+@gmail\.com|admin@restaurant\.com)$/)
+    .withMessage('Please enter a valid Gmail address or the admin email.'),
+
   body('shippingAddress.phone')
     .trim()
     .notEmpty().withMessage('Phone number is required')

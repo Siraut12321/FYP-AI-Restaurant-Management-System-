@@ -1,4 +1,4 @@
-import { useContext, useState } from 'react';
+import { useContext, useEffect, useState } from 'react';
 import styles from '../../styles/CartPage.module.css';
 import { CartContext } from '../../context/CartContext';
 import { AuthContext } from '../../context/AuthContext';
@@ -6,7 +6,8 @@ import orderService from '../../services/orderService';
 
 const PHONE_RE = /^03[0-9]{9}$/;
 
-const emptyAddress = { fullName: '', phone: '', address: '', city: '' };
+const EMAIL_RE = /^(?:[a-zA-Z0-9._%+-]+@gmail\.com|admin@restaurant\.com)$/;
+const emptyAddress = { fullName: '', email: '', phone: '', address: '', city: '' };
 
 function Cart() {
   const { cart, updateQty, removeItem, totalItems, totalPrice, clearCart } = useContext(CartContext);
@@ -17,7 +18,12 @@ function Cart() {
   const [loading, setLoading]         = useState(false);
   const [error, setError]             = useState('');
   const [phoneError, setPhoneError]   = useState('');
+  const [emailError, setEmailError]   = useState('');
   const [successMsg, setSuccessMsg]   = useState('');
+
+  useEffect(() => {
+    if (user?.email) setAddress((current) => ({ ...current, email: user.email }));
+  }, [user]);
 
   const handleAddressChange = (e) => {
     const { name, value } = e.target;
@@ -25,17 +31,20 @@ function Cart() {
       if (!/^[0-9]*$/.test(value) || value.length > 11) return;
       setPhoneError('');
     }
+    if (name === 'email') setEmailError('');
     if (name === 'city' && !/^[a-zA-Z\s]*$/.test(value)) return;
     setAddress((prev) => ({ ...prev, [name]: value }));
   };
 
   const handlePlaceOrder = async () => {
     setError('');
-    if (!user) { setError('Please log in to place an order.'); return; }
-
-    const { fullName, phone, address: addr, city } = address;
-    if (!fullName || !phone || !addr || !city) {
+    const { fullName, email, phone, address: addr, city } = address;
+    if (!fullName || !email || !phone || !addr || !city) {
       setError('Please fill in all shipping address fields.');
+      return;
+    }
+    if (!EMAIL_RE.test(email.trim())) {
+      setEmailError('Please enter a valid Gmail address, such as example@gmail.com.');
       return;
     }
     if (!PHONE_RE.test(phone)) {
@@ -124,12 +133,13 @@ function Cart() {
               <div className={styles.checkoutForm}>
                 <h4>Shipping Address</h4>
 
-                {['fullName', 'phone', 'address', 'city'].map((field) => (
+                {['fullName', 'email', 'phone', 'address', 'city'].map((field) => (
                   <div key={field}>
                     <input
                       name={field}
                       placeholder={
                         field === 'fullName' ? 'Full Name'
+                        : field === 'email'   ? 'Email Address'
                         : field === 'phone'  ? 'Phone Number (03XXXXXXXXX)'
                         : field === 'address'? 'Street Address'
                         : 'City'
@@ -138,7 +148,9 @@ function Cart() {
                       onChange={handleAddressChange}
                       className={styles.input}
                       inputMode={field === 'phone' ? 'numeric' : undefined}
+                      type={field === 'email' ? 'email' : 'text'}
                     />
+                    {field === 'email' && emailError && <p className={styles.error}>{emailError}</p>}
                     {field === 'phone' && phoneError && (
                       <p className={styles.error}>{phoneError}</p>
                     )}

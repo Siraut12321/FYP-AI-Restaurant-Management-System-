@@ -1,5 +1,5 @@
 import { useContext, useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate, Link, useLocation } from 'react-router-dom';
 import styles from '../../styles/AuthPages.module.css';
 import Button from '../../components/ui/Button';
 import TextInput from '../../components/ui/TextInput';
@@ -15,6 +15,7 @@ function Login() {
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(false);
   const nav = useNavigate();
+  const location = useLocation();
 
   const validateForm = () => {
     const v = {};
@@ -35,7 +36,8 @@ function Login() {
     if (res.ok) {
       setSuccess(true);
       const role = res.user?.role;
-      setTimeout(() => nav(role === 'admin' || role === 'staff' ? '/admin/dashboard' : '/'), 300);
+      const returnTo = location.state?.returnTo;
+      setTimeout(() => nav(role === 'admin' || role === 'staff' ? '/admin/dashboard' : (returnTo || '/')), 300);
     } else {
       setError(res.error || 'Login failed. Please check your email and password.');
     }

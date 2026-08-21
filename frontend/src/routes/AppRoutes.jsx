@@ -16,6 +16,7 @@ const Profile        = lazy(() => import('../pages/Profile/Profile'));
 const OrderHistory   = lazy(() => import('../pages/OrderHistory/OrderHistory'));
 const OrderDetails   = lazy(() => import('../pages/OrderDetails/OrderDetails'));
 const Favorites      = lazy(() => import('../pages/Favorites/Favorites'));
+const Conversations  = lazy(() => import('../pages/Conversations/Conversations'));
 
 /* ── Admin pages ── */
 const Dashboard      = lazy(() => import('../pages/Dashboard/Dashboard'));
@@ -60,6 +61,7 @@ function AppRoutes() {
               <Route path='/admin/reviews'   element={<Reviews />} />
               <Route path='/admin/analytics' element={<Analytics />} />
               <Route path='/admin/ai-orders' element={<AiOrders />} />
+              <Route path='/admin/conversations' element={<Conversations />} />
             </Route>
           </Route>
         </Routes>

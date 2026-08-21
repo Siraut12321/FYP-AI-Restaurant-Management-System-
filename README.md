@@ -54,7 +54,10 @@ The standout feature is the **Urdu AI Voice Assistant** powered by VAPI and n8n,
 - 📦 Track order status in real time (Pending → Preparing → Ready → Delivered)
 - 📜 View full order history with itemised breakdowns
 - ❤️ Save and manage favourite dishes
-- ⭐ Write, edit, and delete reviews for purchased dishes
+- ⭐ Submit, edit, and delete real MongoDB reviews with a required 1–5 star rating
+- 📝 Preserve review drafts and menu context when guests are redirected to login
+- 🧾 Display homepage and menu-item reviews from live API data with clean empty states
+- 🛍️ Support guest and authenticated checkout with a required confirmation email
 - 👤 Manage profile — name, phone, address, and Cloudinary avatar
 - 🔐 JWT-based authentication with secure cookie handling
 - 📱 Gmail-only registration and login with strict email validation
@@ -74,7 +77,7 @@ The standout feature is the **Urdu AI Voice Assistant** powered by VAPI and n8n,
 - Automated order processing workflow via **n8n**
 - Voice orders saved to the same MongoDB `Order` collection as website orders
 - Secure machine-to-machine API key authentication
-- Order confirmation emails sent for voice orders too
+- Order confirmation emails sent only after successful order creation when an email is available
 - Voice orders linked to authenticated customers where possible
 
 ### 📧 Email Notifications
@@ -493,7 +496,7 @@ All endpoints are prefixed with `/api/v1`.
 
 | Method | Endpoint | Auth | Description |
 |---|---|---|---|
-| POST | `/orders` | JWT | Place a website order |
+| POST | `/orders` | Optional JWT | Place a guest or authenticated website order; email and Cash on Delivery are required |
 | POST | `/orders/voice` | API Key | Place a voice order (VAPI/n8n) |
 | GET | `/orders/my-orders` | JWT | Get current customer's orders |
 | GET | `/orders/:id` | JWT | Get a single order |
@@ -523,7 +526,7 @@ All endpoints are prefixed with `/api/v1`.
 | Method | Endpoint | Auth | Description |
 |---|---|---|---|
 | GET | `/reviews/:menuItemId` | Public | Get reviews for a menu item |
-| POST | `/reviews` | JWT | Submit a review (must have purchased) |
+| POST | `/reviews` | JWT customer | Submit a review with a valid menu item, required integer rating from 1–5, and optional text |
 | PATCH | `/reviews/:id` | JWT | Edit own review |
 | DELETE | `/reviews/:id` | JWT | Delete own review |
 
@@ -728,7 +731,17 @@ After running `npm run seed:admin`:
 | Field | Rule |
 |---|---|
 | Payment Method | Only `Cash on Delivery` is accepted. Card and Online are rejected at both frontend and backend. |
+| Checkout email | Required for website orders; must be a valid Gmail address or the configured admin email. Stored with the shipping address for guest confirmation. |
 | City field | Alphabetic characters and spaces only — numbers and special characters are blocked. |
+
+### Reviews
+| Field | Rule |
+|---|---|
+| Authentication | Only authenticated customer requests may create, edit, or delete reviews. Customer identity is taken from the JWT. |
+| Menu item | Must be a valid existing MongoDB `MenuItem` ID. |
+| Rating | Required integer from `1` to `5`; rating-only reviews are accepted. |
+| Review text | Optional, maximum 1,000 characters. |
+| Duplicate reviews | A customer can submit at most one review per menu item. |
 
 All validation is enforced on **both frontend and backend**. Backend validation uses `express-validator` and cannot be bypassed by direct API calls.
 
@@ -740,9 +753,10 @@ See [TESTING_GUIDE.md](TESTING_GUIDE.md) for the full testing checklist covering
 - Authentication flows
 - Profile API
 - Order creation (website and voice)
+- Guest checkout email validation and post-order confirmation behavior
 - Order tracking
 - Favorites
-- Reviews
+- Homepage and menu-item reviews, including guest login draft restoration
 - Admin panel pages
 - Frontend build verification
 - Regression checklist

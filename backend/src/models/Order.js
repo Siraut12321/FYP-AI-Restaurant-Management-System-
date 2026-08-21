@@ -14,6 +14,7 @@ const orderItemSchema = new mongoose.Schema(
 const shippingAddressSchema = new mongoose.Schema(
   {
     fullName: { type: String, required: true, trim: true },
+    email:    { type: String, required: function requiredForWebsiteOrder() { return this.ownerDocument().orderSource === 'Website'; }, trim: true, lowercase: true, match: [/^(?:[a-zA-Z0-9._%+-]+@gmail\.com|admin@restaurant\.com)$/, 'Please enter a valid Gmail address or the admin email.'] },
     phone:    { type: String, required: true, trim: true },
     address:  { type: String, required: true, trim: true },
     city:     { type: String, required: true, trim: true },

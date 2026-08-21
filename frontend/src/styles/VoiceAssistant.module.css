@@ -5,8 +5,16 @@
   background: linear-gradient(180deg, rgba(255, 209, 102, 0.06), transparent 70%);
 }
 
+.assistantLayout {
+  width: min(100%, 1280px);
+  display: flex;
+  align-items: stretch;
+  gap: 18px;
+}
+
 .assistantCard {
   width: min(100%, 1040px);
+  flex: 1;
   background: linear-gradient(145deg, rgba(14, 14, 18, 0.98), rgba(8, 8, 10, 0.96));
   border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 28px;
@@ -15,6 +23,18 @@
   display: grid;
   gap: 18px;
   backdrop-filter: blur(14px);
+}
+
+@media (max-width: 760px) {
+  .assistantSection { padding-inline: 14px; }
+
+  .assistantLayout { display: block; }
+
+  .assistantCard {
+    width: 100%;
+    padding: 22px 16px;
+    border-radius: 20px;
+  }
 }
 
 .header {

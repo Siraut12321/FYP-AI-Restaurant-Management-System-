@@ -1,6 +1,5 @@
 import Review from '../models/Review.js';
 import MenuItem from '../models/MenuItem.js';
-import Order from '../models/Order.js';
 import AppError from '../utils/AppError.js';
 
 const reviewProjection = 'customer menuItem rating comment createdAt updatedAt';
@@ -20,13 +19,9 @@ const getPagination = (query = {}) => {
 export const createReview = async (customerId, data) => {
   const { menuItem, rating, comment } = data;
 
-  const [item, purchased] = await Promise.all([
-    MenuItem.exists({ _id: menuItem }),
-    Order.exists({ customer: customerId, 'orderItems.menuItem': menuItem }),
-  ]);
+  const item = await MenuItem.exists({ _id: menuItem });
 
   if (!item) throw new AppError('Menu item not found', 404);
-  if (!purchased) throw new AppError('You can only review dishes you have purchased', 403);
 
   try {
     return await Review.create({ customer: customerId, menuItem, rating, comment });

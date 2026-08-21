@@ -39,7 +39,7 @@ export const createOrder = async (customerId, body) => {
   const { resolvedItems, totalAmount } = await resolveOrderItems(orderItems);
 
   const order = await Order.create({
-    customer: customerId,
+    customer: customerId || null,
     orderItems: resolvedItems,
     shippingAddress,
     paymentMethod,
