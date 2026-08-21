@@ -12,7 +12,6 @@ import {
   MdLogout,
   MdClose,
   MdSmartToy,
-  MdForum,
 } from 'react-icons/md';
 import { AuthContext } from '../../../context/AuthContext';
 import api from '../../../api/api';
@@ -39,7 +38,6 @@ const NAV_SECTIONS = [
     items: [
       { to: '/admin/analytics', icon: <MdBarChart />,  label: 'Analytics' },
       { to: '/admin/ai-orders', icon: <MdSmartToy />,  label: 'AI Orders' },
-      { to: '/admin/conversations', icon: <MdForum />, label: 'Conversations' },
     ],
   },
   {
