@@ -1,7 +1,7 @@
 import { NavLink, Link } from 'react-router-dom';
 import styles from '../styles/Navbar.module.css';
 import { useContext } from 'react';
-import { FiShoppingCart, FiUser, FiHeart, FiList, FiLogOut } from 'react-icons/fi';
+import { FiShoppingCart, FiUser, FiHeart, FiList, FiLogOut, FiGrid } from 'react-icons/fi';
 import { CartContext } from '../context/CartContext';
 import { AuthContext } from '../context/AuthContext';
 
@@ -23,6 +23,12 @@ function Navbar() {
         </Link>
         {user ? (
           <>
+            {(user.role === 'admin' || user.role === 'staff') && (
+              <Link to='/admin/dashboard' className={styles.iconLink} aria-label="Admin Dashboard">
+                <FiGrid className={styles.icon} />
+                <span>Admin Dashboard</span>
+              </Link>
+            )}
             {user.role === 'customer' && (
               <Link to='/profile' className={styles.iconLink} aria-label="Profile">
                 <FiUser className={styles.icon} />

@@ -11,6 +11,7 @@ import {
   MdSettings,
   MdLogout,
   MdAdminPanelSettings,
+  MdLanguage,
 } from 'react-icons/md';
 import { AuthContext } from '../../../context/AuthContext';
 import styles from './TopNavbar.module.css';
@@ -166,8 +167,8 @@ function TopNavbar({ onToggleSidebar, collapsed }) {
           >
             <div className={styles.avatar}>{initials}</div>
             <div className={styles.avatarInfo}>
-              <span className={styles.avatarName}>{user?.name ?? 'Admin'}</span>
-              <span className={styles.avatarRole}>Administrator</span>
+              <span className={styles.avatarName}>Admin</span>
+              <span className={styles.avatarRole}>Admin</span>
             </div>
             <MdKeyboardArrowDown className={`${styles.chevron} ${profileOpen ? styles.open : ''}`} />
           </button>
@@ -183,7 +184,7 @@ function TopNavbar({ onToggleSidebar, collapsed }) {
               >
                 {/* Header */}
                 <div className={styles.dropHeader}>
-                  <div className={styles.dropName}>{user?.name ?? 'Administrator'}</div>
+                  <div className={styles.dropName}>Admin</div>
                   <div className={styles.dropEmail}>{user?.email ?? 'admin@hotandspicy.local'}</div>
                 </div>
 
@@ -195,6 +196,13 @@ function TopNavbar({ onToggleSidebar, collapsed }) {
                     onClick={() => setProfileOpen(false)}
                   >
                     <MdAdminPanelSettings /> Dashboard
+                  </Link>
+                  <Link
+                    to="/"
+                    className={styles.dropItem}
+                    onClick={() => setProfileOpen(false)}
+                  >
+                    <MdLanguage /> View Website
                   </Link>
                   <Link
                     to="/admin/settings"
