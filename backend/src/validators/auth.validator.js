@@ -1,7 +1,7 @@
 import { body } from 'express-validator';
 
-const GMAIL_RE = /^[a-zA-Z0-9._%+-]+@gmail\.com$/;
-const GMAIL_MSG = 'Please enter a valid Gmail address ending with @gmail.com.';
+const AUTH_EMAIL_RE = /^(?:[a-zA-Z0-9._%+-]+@gmail\.com|admin@restaurant\.com)$/;
+const AUTH_EMAIL_MSG = 'Please enter a valid Gmail address or the admin email.';
 
 export const registerValidator = [
   body('name')
@@ -12,7 +12,7 @@ export const registerValidator = [
   body('email')
     .trim()
     .notEmpty().withMessage('Email is required')
-    .matches(GMAIL_RE).withMessage(GMAIL_MSG),
+    .matches(AUTH_EMAIL_RE).withMessage(AUTH_EMAIL_MSG),
 
   body('password')
     .notEmpty().withMessage('Password is required')
@@ -23,7 +23,7 @@ export const loginValidator = [
   body('email')
     .trim()
     .notEmpty().withMessage('Email is required')
-    .matches(GMAIL_RE).withMessage(GMAIL_MSG),
+    .matches(AUTH_EMAIL_RE).withMessage(AUTH_EMAIL_MSG),
 
   body('password')
     .notEmpty().withMessage('Password is required')

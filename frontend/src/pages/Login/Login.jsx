@@ -5,7 +5,7 @@ import Button from '../../components/ui/Button';
 import TextInput from '../../components/ui/TextInput';
 import { AuthContext } from '../../context/AuthContext';
 
-const GMAIL_RE = /^[a-zA-Z0-9._%+-]+@gmail\.com$/;
+const AUTH_EMAIL_RE = /^(?:[a-zA-Z0-9._%+-]+@gmail\.com|admin@restaurant\.com)$/;
 const errStyle = { color: '#ff6b6b', fontSize: '0.75rem', marginTop: 4 };
 
 function Login() {
@@ -19,7 +19,7 @@ function Login() {
   const validateForm = () => {
     const v = {};
     if (!form.email.trim()) v.email = 'Email is required.';
-    else if (!GMAIL_RE.test(form.email)) v.email = 'Please enter a valid Gmail address ending with @gmail.com.';
+    else if (!AUTH_EMAIL_RE.test(form.email)) v.email = 'Please enter a valid Gmail address or the admin email.';
     if (!form.password) v.password = 'Password is required.';
     else if (form.password.length < 9 || form.password.length > 12) v.password = 'Password must be between 9 and 12 characters.';
     setValidations(v);
