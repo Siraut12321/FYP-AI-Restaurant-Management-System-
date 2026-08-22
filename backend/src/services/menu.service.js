@@ -1,6 +1,15 @@
 import MenuItem from '../models/MenuItem.js';
 import cloudinary from '../config/cloudinaryConfig.js';
 import AppError from '../utils/AppError.js';
+import { categoryKey, categoryRankExpression, CATEGORY_ORDER } from '../utils/menuOrdering.js';
+
+const nextDisplayOrder = async (category, excludeId = null) => {
+  const escapedCategory = category.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const filter = { category: new RegExp(`^${escapedCategory}$`, 'i') };
+  if (excludeId) filter._id = { $ne: excludeId };
+  const lastItem = await MenuItem.findOne(filter).sort({ displayOrder: -1 }).select('displayOrder').lean();
+  return (lastItem?.displayOrder || 0) + 1;
+};
 
 // ─── Extract Cloudinary public_id from URL ────────────────────────────────────
 const extractPublicId = (url) => {
@@ -27,7 +36,9 @@ const deleteCloudinaryImage = async (imageUrl) => {
 
 // ─── Create Menu Item ─────────────────────────────────────────────────────────
 export const createMenuItem = async (data) => {
-  const item = await MenuItem.create(data);
+  const itemData = { ...data };
+  if (!itemData.displayOrder) itemData.displayOrder = await nextDisplayOrder(itemData.category);
+  const item = await MenuItem.create(itemData);
   return item;
 };
 
@@ -39,7 +50,20 @@ export const getAllMenuItems = async (query = {}) => {
   if (query.isAvailable !== undefined) filter.isAvailable = query.isAvailable === 'true';
   if (query.isFeatured !== undefined) filter.isFeatured = query.isFeatured === 'true';
 
-  const items = await MenuItem.find(filter).sort({ createdAt: -1 });
+  const items = await MenuItem.aggregate([
+    { $match: filter },
+    { $addFields: { categoryRank: categoryRankExpression } },
+    {
+      $sort: {
+        categoryRank: 1,
+        displayOrder: 1,
+        createdAt: 1,
+        dishName: 1,
+        _id: 1,
+      },
+    },
+    { $project: { categoryRank: 0 } },
+  ]);
   return items;
 };
 
@@ -59,6 +83,10 @@ export const updateMenuItem = async (id, data, newImageUrl) => {
   if (newImageUrl) {
     await deleteCloudinaryImage(item.image);
     data.image = newImageUrl;
+  }
+
+  if (data.category && categoryKey(data.category) !== categoryKey(item.category) && !data.displayOrder) {
+    data.displayOrder = await nextDisplayOrder(data.category, item._id);
   }
 
   Object.assign(item, data);
@@ -98,5 +126,9 @@ export const toggleFeatured = async (id) => {
 // ─── Get All Unique Categories ────────────────────────────────────────────────
 export const getCategories = async () => {
   const categories = await MenuItem.distinct('category');
-  return categories.sort();
+  const categoryOrder = new Map(CATEGORY_ORDER.map((name, index) => [name, index]));
+  return categories.sort((a, b) => {
+    const rankDifference = (categoryOrder.get(categoryKey(a)) ?? 99) - (categoryOrder.get(categoryKey(b)) ?? 99);
+    return rankDifference || a.localeCompare(b);
+  });
 };

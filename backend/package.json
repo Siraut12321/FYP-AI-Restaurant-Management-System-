@@ -10,6 +10,7 @@
     "lint": "eslint src/",
     "seed:admin": "node src/scripts/seedAdmin.js",
     "seed:menu": "node src/scripts/seedMenu.js",
+    "backfill:menu-order": "node src/scripts/backfillMenuDisplayOrder.js",
     "backfill:voice-customers": "node src/scripts/backfillVoiceOrderCustomers.js"
   },
   "engines": {

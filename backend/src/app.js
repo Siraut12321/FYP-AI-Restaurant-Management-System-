@@ -92,7 +92,13 @@ if (process.env.NODE_ENV === 'development') {
     { dishName: 'Chocolate Lava Cake',                description: 'Warm chocolate cake with molten center.',                               category: 'Dessert',   price: 550 },
     { dishName: 'Hot Brownie with Ice Cream',         description: 'Fresh brownie served with vanilla ice cream.',                          category: 'Dessert',   price: 650 },
     { dishName: 'Family Deal 1',                      description: '2 Karahi, 4 Naan, Salad & Drinks.',                                    category: 'Deals',     price: 3999, isFeatured: true },
-  ].map((i) => ({ isAvailable: true, isFeatured: false, image: PLACEHOLDER, ...i }));
+  ].map((i, index, items) => ({
+    isAvailable: true,
+    isFeatured: false,
+    image: PLACEHOLDER,
+    ...i,
+    displayOrder: items.slice(0, index + 1).filter((candidate) => candidate.category === i.category).length,
+  }));
 
   app.post('/api/v1/dev/seed-menu', async (_req, res) => {
     await MenuItem.deleteMany({});

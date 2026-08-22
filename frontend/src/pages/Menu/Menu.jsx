@@ -57,6 +57,7 @@ const normalise = (item) => ({
   priceValue:  Number(item.discountPrice || item.price),
   rating:      typeof item.rating === 'number' ? item.rating : null,
   image:       item.image,
+  displayOrder: item.displayOrder,
   isAvailable: item.isAvailable,
 });
 
@@ -67,7 +68,7 @@ function Menu() {
 
   const [search, setSearch]       = useState('');
   const [category, setCategory]   = useState('All');
-  const [sort, setSort]           = useState('rating');
+  const [sort, setSort]           = useState('display-order');
   const [activeCategory, setActiveCategory] = useState('');
   const sectionRefs = useRef({});
   const lastActionWasClickRef = useRef(false);
@@ -125,7 +126,8 @@ function Menu() {
       if (sort === 'price-low')  return a.priceValue - b.priceValue;
       if (sort === 'price-high') return b.priceValue - a.priceValue;
       if (sort === 'newest')     return b.id.localeCompare(a.id);
-      return (b.rating ?? 0) - (a.rating ?? 0);
+      if (sort === 'rating') return (b.rating ?? 0) - (a.rating ?? 0);
+      return (a.displayOrder ?? Number.MAX_SAFE_INTEGER) - (b.displayOrder ?? Number.MAX_SAFE_INTEGER);
     });
 
     // Group by category preserving sort order while normalising case-insensitive duplicates
@@ -276,6 +278,7 @@ function Menu() {
                 ))}
               </select>
               <select aria-label="Sort menu" value={sort} onChange={(e) => setSort(e.target.value)}>
+                <option value="display-order">Recommended</option>
                 <option value="rating">Highest Rated</option>
                 <option value="price-low">Price Low to High</option>
                 <option value="price-high">Price High to Low</option>

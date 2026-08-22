@@ -22,6 +22,11 @@ const menuItemSchema = new mongoose.Schema(
       trim: true,
     },
 
+    displayOrder: {
+      type: Number,
+      min: [1, 'Display order must be a positive number'],
+    },
+
     price: {
       type: Number,
       required: [true, 'Price is required'],
@@ -68,6 +73,8 @@ const menuItemSchema = new mongoose.Schema(
   },
   { timestamps: true }
 );
+
+menuItemSchema.index({ category: 1, displayOrder: 1 });
 
 const MenuItem = mongoose.model('MenuItem', menuItemSchema);
 

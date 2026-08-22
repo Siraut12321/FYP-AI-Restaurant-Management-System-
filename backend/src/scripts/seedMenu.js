@@ -35,7 +35,13 @@ const menuItems = [
   { dishName: 'Hot Brownie with Ice Cream',description: 'Fresh brownie served with vanilla ice cream.',     category: 'Dessert', price: 650 },
   // ── Deals ─────────────────────────────────────────────────────────────────
   { dishName: 'Family Deal 1', description: '2 Karahi, 4 Naan, Salad & Drinks.', category: 'Deals', price: 3999, isFeatured: true },
-].map((item) => ({ isAvailable: true, isFeatured: false, image: PLACEHOLDER, ...item }));
+].map((item, index, items) => ({
+  isAvailable: true,
+  isFeatured: false,
+  image: PLACEHOLDER,
+  ...item,
+  displayOrder: items.slice(0, index + 1).filter((candidate) => candidate.category === item.category).length,
+}));
 
 const seedMenu = async () => {
   try {
