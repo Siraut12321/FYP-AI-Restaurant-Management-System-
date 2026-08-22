@@ -169,6 +169,7 @@ export const sendMessageToAI = async (message, language = 'en', metadata = {}) =
     authenticated: metadata.authenticated === true,
     userId: metadata.userId || null,
     userName: metadata.userName || null,
+    email: metadata.email || null,
     phone: metadata.phone || null,
     address: metadata.address || null,
     city: metadata.city || null,

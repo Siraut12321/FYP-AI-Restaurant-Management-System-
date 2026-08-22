@@ -441,11 +441,13 @@ function VoiceAssistant() {
 
       let phone = userRef.current?.phone ?? null;
       let address = userRef.current?.address ?? null;
-      if (userRef.current && (!phone || !address)) {
+      let email = userRef.current?.email ?? null;
+      if (userRef.current && (!phone || !address || !email)) {
         try {
           if (profileFallback && profileFallback._id === userRef.current._id) {
             phone = phone || profileFallback.phone || null;
             address = address || profileFallback.address || null;
+            email = email || profileFallback.email || null;
           } else {
             if (!fetchingProfileRef.current) {
               fetchingProfileRef.current = profileService.getProfile()
@@ -458,6 +460,7 @@ function VoiceAssistant() {
             if (profile) {
               phone = phone || profile.phone || null;
               address = address || profile.address || null;
+              email = email || profile.email || null;
               setProfileFallback(profile);
             }
           }
@@ -480,6 +483,7 @@ function VoiceAssistant() {
         authenticated: !!userRef.current,
         userId: userRef.current?._id || null,
         userName: userRef.current?.name || null,
+        email,
         phone,
         address,
         city: null,
@@ -586,12 +590,14 @@ function VoiceAssistant() {
 
       let phone = userRef.current?.phone ?? null;
       let address = userRef.current?.address ?? null;
+      let email = userRef.current?.email ?? null;
 
-      if (userRef.current && (!phone || !address)) {
+      if (userRef.current && (!phone || !address || !email)) {
         try {
           if (profileFallback && profileFallback._id === userRef.current._id) {
             phone = phone || profileFallback.phone || null;
             address = address || profileFallback.address || null;
+            email = email || profileFallback.email || null;
           } else {
             if (!fetchingProfileRef.current) {
               fetchingProfileRef.current = profileService.getProfile()
@@ -604,6 +610,7 @@ function VoiceAssistant() {
             if (profile) {
               phone = phone || profile.phone || null;
               address = address || profile.address || null;
+              email = email || profile.email || null;
               setProfileFallback(profile);
             }
           }
@@ -617,6 +624,7 @@ function VoiceAssistant() {
         authenticated: !!userRef.current,
         userId: userRef.current?._id || null,
         userName: userRef.current?.name || null,
+        email,
         phone,
         address,
         sessionId: activeConversationRef.current?.sessionId,
