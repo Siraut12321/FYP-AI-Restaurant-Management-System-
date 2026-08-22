@@ -9,10 +9,12 @@ import {
   MdSettings,
   MdLogout,
   MdAdminPanelSettings,
-  MdLanguage,
 } from 'react-icons/md';
 import { AuthContext } from '../../../context/AuthContext';
 import styles from './TopNavbar.module.css';
+
+/* ── Notifications: currently empty, will be fetched from API in Phase 7 ── */
+// const NOTIFICATIONS = [];
 
 /* ── Route → readable title map ── */
 const TITLES = {
@@ -59,7 +61,6 @@ function TopNavbar({ onToggleSidebar, collapsed }) {
   }
 
   const pageTitle = TITLES[pathname] ?? 'Admin';
-  const initials  = 'A';
 
   return (
     <header className={`${styles.navbar} ${collapsed ? styles.collapsed : ''}`}>
@@ -86,6 +87,8 @@ function TopNavbar({ onToggleSidebar, collapsed }) {
       {/* Right cluster */}
       <div className={styles.right}>
 
+        <div className={styles.vDivider} />
+
         {/* Avatar + Profile dropdown */}
         <div style={{ position: 'relative' }} ref={profileRef}>
           <button
@@ -93,10 +96,10 @@ function TopNavbar({ onToggleSidebar, collapsed }) {
             onClick={() => setProfileOpen((v) => !v)}
             aria-label="Profile menu"
           >
-            <div className={styles.avatar}>{initials}</div>
+            <div className={styles.avatar}>A</div>
             <div className={styles.avatarInfo}>
               <span className={styles.avatarName}>Admin</span>
-              <span className={styles.avatarRole}>Admin</span>
+              <span className={styles.avatarRole}>Administrator</span>
             </div>
             <MdKeyboardArrowDown className={`${styles.chevron} ${profileOpen ? styles.open : ''}`} />
           </button>
@@ -124,13 +127,6 @@ function TopNavbar({ onToggleSidebar, collapsed }) {
                     onClick={() => setProfileOpen(false)}
                   >
                     <MdAdminPanelSettings /> Dashboard
-                  </Link>
-                  <Link
-                    to="/"
-                    className={styles.dropItem}
-                    onClick={() => setProfileOpen(false)}
-                  >
-                    <MdLanguage /> View Website
                   </Link>
                   <Link
                     to="/admin/settings"

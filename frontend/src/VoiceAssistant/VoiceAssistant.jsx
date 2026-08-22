@@ -4,13 +4,13 @@ import {
   sendMessageToAI,
   persistMessages,
   createGuestConversation,
-  persistGuestConversation,
   loadConversationIndex,
   loadConvMessages,
   setActiveConvId,
   updateGuestConvTitle,
   deleteGuestConversation,
   generateSessionId,
+  getActiveConvId,
 } from '../services/aiService';
 import conversationService from '../services/conversationService';
 import ChatSidebar from '../components/ChatSidebar/ChatSidebar';
@@ -70,6 +70,8 @@ function VoiceAssistant() {
   const [conversations, setConversations] = useState([]);
   const [activeConvId, setActiveConvIdState] = useState(null);
   const activeConversationRef = useRef(null);
+  const guestMigrationRef = useRef(false);
+  const conversationPersistenceRef = useRef(false);
   const conversationBootstrappedRef = useRef(false);
   const [isLoading, setIsLoading] = useState(false);
   const [voiceEnabled, setVoiceEnabled] = useState(() => getStoredVoicePreference());
@@ -117,16 +119,41 @@ function VoiceAssistant() {
 
   const setActiveConversation = (conversation, nextMessages = []) => {
     activeConversationRef.current = conversation;
-    setActiveConvIdState(conversation.id || conversation._id);
+    setActiveConvIdState(conversation.id || conversation._id || conversation.sessionId);
     setMessages(nextMessages);
-    if (conversation.id) setActiveConvId(conversation.id);
-    else setActiveConvId(null);
+    setActiveConvId(conversation.id || conversation._id || conversation.sessionId);
+  };
+
+  const migrateGuestConversation = async (guestConversation, guestMessages) => {
+    if (!user || !guestConversation?.sessionId || guestMigrationRef.current) return;
+
+    guestMigrationRef.current = true;
+    try {
+      const conversation = await conversationService.create(guestConversation.sessionId, guestConversation.title);
+      const migrated = await conversationService.update(conversation._id, { messages: guestMessages });
+      deleteGuestConversation(guestConversation.id);
+      setActiveConversation(migrated || conversation, guestMessages);
+      await refreshConversationList(true);
+    } finally {
+      guestMigrationRef.current = false;
+    }
   };
 
   const startNewConversation = async (authenticated) => {
     const sessionId = generateSessionId();
     if (authenticated) {
-      setActiveConversation({ sessionId, title: 'New Conversation' }, []);
+      // For authenticated users, create a transient conversation object
+      // (no _id yet). It will be persisted to MongoDB only when the first
+      // user message arrives via the persistence effect.
+      // This prevents empty conversations from being saved.
+      const transientConversation = {
+        sessionId,
+        title: 'New Conversation',
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+        // Note: no _id field - indicates conversation hasn't been persisted yet
+      };
+      setActiveConversation(transientConversation, []);
       await refreshConversationList(true);
       return;
     }
@@ -134,29 +161,6 @@ function VoiceAssistant() {
     const conversation = createGuestConversation();
     setActiveConversation(conversation, []);
     await refreshConversationList(false);
-  };
-
-  const ensureConversationPersisted = async () => {
-    const conversation = activeConversationRef.current;
-    if (!conversation) return null;
-
-    if (conversation.id) {
-      persistGuestConversation(conversation);
-      return conversation;
-    }
-
-    if (!conversation._id) {
-      try {
-        const created = await conversationService.create(conversation.sessionId);
-        activeConversationRef.current = created;
-        setActiveConvIdState(created._id);
-        return created;
-      } catch {
-        return conversation;
-      }
-    }
-
-    return conversation;
   };
 
   const selectConversation = async (id) => {
@@ -196,6 +200,32 @@ function VoiceAssistant() {
   useEffect(() => {
     if (authLoading || conversationBootstrappedRef.current) return;
     conversationBootstrappedRef.current = true;
+
+    const activeGuestId = getActiveConvId();
+    const activeGuest = loadConversationIndex().find((conversation) => conversation.id === activeGuestId);
+    const activeGuestMessages = activeGuest ? loadConvMessages(activeGuest.id) : [];
+    const hasUserMessage = activeGuestMessages.some((message) => message.role === 'user');
+
+    if (activeGuest && hasUserMessage) {
+      setActiveConversation(activeGuest, activeGuestMessages);
+      if (user) migrateGuestConversation(activeGuest, activeGuestMessages).catch(() => {});
+      else refreshConversationList(false);
+      return;
+    }
+
+    if (user && activeGuestId) {
+      conversationService.get(activeGuestId)
+        .then((conversation) => {
+          if (conversation?.messages?.some((message) => message.role === 'user')) {
+            setActiveConversation(conversation, conversation.messages);
+          } else {
+            startNewConversation(true);
+          }
+        })
+        .catch(() => startNewConversation(true));
+      return;
+    }
+
     startNewConversation(!!user);
   }, [authLoading, user]);
 
@@ -203,22 +233,26 @@ function VoiceAssistant() {
   useEffect(() => {
     const previousUserId = previousConversationUserRef.current;
     const currentUserId = user?._id || null;
-    if (!authLoading && previousUserId === null && currentUserId !== null && activeConversationRef.current?.id && messages.some((message) => message.role === 'user')) {
-      const guestConversation = activeConversationRef.current;
-      conversationService.create(guestConversation.sessionId, guestConversation.title)
-        .then((conversation) => conversationService.update(conversation._id, { messages }))
-        .then((conversation) => {
-          startNewConversation(true);
-          refreshConversationList(true);
-        })
-        .catch(() => refreshConversationList(true));
-    }
     if (!authLoading && previousUserId !== null && currentUserId === null) {
+      activeConversationRef.current = null;
+      setActiveConvId(null);
+      setMessages([]);
       startNewConversation(false);
       refreshConversationList(false);
     }
+    if (!authLoading && previousUserId === null && currentUserId !== null) {
+      const guestId = activeConversationRef.current?.id || getActiveConvId();
+      const guestConversation = activeConversationRef.current?.id
+        ? activeConversationRef.current
+        : loadConversationIndex().find((conversation) => conversation.id === guestId);
+      const guestMessages = guestConversation?.id ? loadConvMessages(guestConversation.id) : messages;
+      if (guestConversation && guestMessages.some((message) => message.role === 'user')) {
+        migrateGuestConversation(guestConversation, guestMessages)
+          .catch(() => refreshConversationList(true));
+      }
+    }
     previousConversationUserRef.current = currentUserId;
-  }, [authLoading, user, messages]);
+  }, [authLoading, user]);
 
   const isListening = assistantState === 'listening';
   const isThinking = assistantState === 'processing';
@@ -396,7 +430,6 @@ function VoiceAssistant() {
     setSpeechNotice('');
 
     try {
-      await ensureConversationPersisted();
       if (userRef.current && authLoadingRef.current) {
         let waited = 0;
         while (authLoadingRef.current && waited < 1500) {
@@ -542,7 +575,6 @@ function VoiceAssistant() {
     processingRef.current = true;
 
     try {
-      await ensureConversationPersisted();
       if (userRef.current && authLoadingRef.current) {
         let waited = 0;
         while (authLoadingRef.current && waited < 1500) {
@@ -692,10 +724,12 @@ function VoiceAssistant() {
   useEffect(() => {
     const conversation = activeConversationRef.current;
     if (!conversation || !activeConvId) return;
-    if (!messages.some((message) => message.role === 'user')) return;
 
+    const hasUserMessage = messages.some((message) => message.role === 'user' && message.content?.trim());
+    if (!hasUserMessage) return;
+
+    // Guest conversation (has local id, stored in localStorage)
     if (conversation.id) {
-      persistGuestConversation(conversation);
       persistMessages(messages, conversation.id);
       const firstUserMessage = messages.find((message) => message.role === 'user');
       if (firstUserMessage) updateGuestConvTitle(conversation.id, firstUserMessage.content);
@@ -703,6 +737,28 @@ function VoiceAssistant() {
       return;
     }
 
+    // Authenticated conversation (stored in MongoDB)
+    // If conversation doesn't have _id yet, create it first
+    if (!conversation._id) {
+      if (conversationPersistenceRef.current) return;
+      conversationPersistenceRef.current = true;
+      conversationService.create(conversation.sessionId, conversation.title)
+        .then((created) => {
+          activeConversationRef.current = created;
+          setActiveConvIdState(created._id);
+          setActiveConvId(created._id);
+          return conversationService.update(created._id, { messages });
+        })
+        .then((updated) => {
+          if (updated) activeConversationRef.current = updated;
+          refreshConversationList(true);
+        })
+        .catch(() => {})
+        .finally(() => { conversationPersistenceRef.current = false; });
+      return;
+    }
+
+    // Conversation already exists in MongoDB, just update it
     conversationService.update(conversation._id, { messages }).then((updated) => {
       if (updated) activeConversationRef.current = updated;
       refreshConversationList(true);

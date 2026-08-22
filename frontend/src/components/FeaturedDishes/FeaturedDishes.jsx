@@ -16,8 +16,6 @@ function FeaturedDishes() {
     return () => { active = false; };
   }, []);
 
-  if (dishes.length === 0) return null;
-
   return (
     <section className={styles.section}>
       <div className={styles.header}>
@@ -25,11 +23,9 @@ function FeaturedDishes() {
         <h2>Featured Dishes</h2>
       </div>
       <div className={styles.grid}>
+        {dishes.length === 0 && <p>No featured dishes available right now.</p>}
         {dishes.map((dish) => (
           <div key={dish._id} className={styles.card}>
-              {dish.image
-                ? <img src={dish.image} alt={dish.dishName} className={styles.image} />
-                : <div className={styles.imageFallback} aria-hidden="true" />}
             <div className={styles.badge}>Chef&apos;s Pick</div>
             <h3>{dish.dishName}</h3>
             <p>{dish.description}</p>

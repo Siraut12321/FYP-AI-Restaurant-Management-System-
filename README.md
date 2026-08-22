@@ -626,10 +626,12 @@ Content-Type: application/json
 {
   "customer": {
     "name": "Ali Khan",
-    "phone": "+923001234567"
+    "phone": "+923001234567",
+    "email": "ali.khan@gmail.com"
   },
   "shippingAddress": {
     "fullName": "Ali Khan",
+    "email": "ali.khan@gmail.com",
     "phone": "+923001234567",
     "address": "House 15, Gulshan Road",
     "city": "Lahore"
@@ -642,6 +644,12 @@ Content-Type: application/json
   ],
   "paymentMethod": "Cash on Delivery"
 } Prices are always fetched from MongoDB — the client cannot override them.
+
+### 💬 Conversation History
+
+The AI chat keeps a transient active draft until the first meaningful user message. That message immediately saves the conversation, derives its title, and makes it available in history. Guest conversations are stored locally and retain their active session across page navigation and refresh; when the guest logs in, the same session and messages are migrated once to that user's account. Authenticated history is always queried by the current user ID, and logout clears the active private chat before a new guest session starts.
+
+Empty chats are never added to history. Selecting **New Chat** creates only a fresh transient draft, while existing conversations remain available after an order or navigation.
 
 ### n8n Order Status Webhook
 

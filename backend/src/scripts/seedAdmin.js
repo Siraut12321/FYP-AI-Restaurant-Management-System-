@@ -8,7 +8,7 @@ const seedAdmin = async () => {
   await User.deleteOne({ email: 'admin@restaurant.com' });
 
   const admin = await User.create({
-    name: 'Super Admin',
+    name: 'Admin',
     email: 'admin@restaurant.com',
     password: 'Admin@1234',
     role: 'admin',

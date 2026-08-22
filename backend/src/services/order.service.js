@@ -112,13 +112,13 @@ export const createVoiceOrder = async (body) => {
     }
 
     resolvedCustomer = userFromId._id;
-    customerDetails = { name: userFromId.name, phone: userFromId.phone };
+    customerDetails = { name: userFromId.name, phone: userFromId.phone, email: shippingAddress?.email || null };
   } else if (customer) {
     const customerId = customer._id || customer.id || null;
     const userFromCustomerId = customerId ? await resolveUserById(customerId) : null;
     if (userFromCustomerId) {
       resolvedCustomer = userFromCustomerId._id;
-      customerDetails = { name: userFromCustomerId.name, phone: userFromCustomerId.phone };
+      customerDetails = { name: userFromCustomerId.name, phone: userFromCustomerId.phone, email: shippingAddress?.email || null };
     }
 
     if (!resolvedCustomer) {
@@ -126,7 +126,7 @@ export const createVoiceOrder = async (body) => {
       const userFromCustomerPhone = customerPhone ? await resolveUserByPhone(customerPhone) : null;
       if (userFromCustomerPhone) {
         resolvedCustomer = userFromCustomerPhone._id;
-        customerDetails = { name: userFromCustomerPhone.name, phone: userFromCustomerPhone.phone };
+        customerDetails = { name: userFromCustomerPhone.name, phone: userFromCustomerPhone.phone, email: shippingAddress?.email || null };
       }
     }
   }
@@ -149,6 +149,7 @@ export const createVoiceOrder = async (body) => {
     customerDetails = {
       name: customer?.name || shippingAddress?.fullName || null,
       phone: customer?.phone || shippingAddress?.phone || null,
+      email: customer?.email || shippingAddress?.email || null,
     };
   }
 

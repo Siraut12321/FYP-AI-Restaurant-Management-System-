@@ -121,6 +121,14 @@ Website checkout supports guests and authenticated customers. Every website orde
 
 ## 8. Frontend Route Tests
 
+### Chat continuity and isolation
+
+- Start a guest chat and send a message; verify exactly one titled history item appears.
+- Refresh and navigate Home → Menu/Profile → Home; verify the active messages remain and no empty duplicate appears.
+- Start a guest chat, log in, return Home, and verify the same messages continue and only the logged-in user's history is shown.
+- Log out and log in as another user; verify the previous user's active chat and history are not visible.
+- Click **New Chat**; verify it is transient until its first user message and the prior conversation remains unchanged.
+
 As an authenticated customer, verify these routes load and call the backend:
 
 - `/profile`
